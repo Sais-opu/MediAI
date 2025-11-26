@@ -40,7 +40,7 @@ createRoot(document.getElementById('root')).render(
       draggable
       pauseOnHover
       theme="light"
-      transition="bounce"
     />
+
   </StrictMode>,
 )

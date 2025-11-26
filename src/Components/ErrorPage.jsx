@@ -7,14 +7,32 @@ const ErrorPage = () => {
     const navigate = useNavigate();
 
     const handleGoHome = () => {
-        toast.success("Redirecting to Home...", { position: "top-center" });
+        // Show dismissible toast
+        toast.success("Redirecting to Home...", {
+            position: "top-center",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+        });
+
+        // Navigate after 1 second
         setTimeout(() => {
             navigate("/");
         }, 1000);
     };
 
     const handleRetry = () => {
-        toast.info("Retrying...", { position: "top-center" });
+        toast.info("Retrying...", {
+            position: "top-center",
+            autoClose: 5000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+        });
+
         setTimeout(() => window.location.reload(), 1000);
     };
 
@@ -47,7 +65,7 @@ const ErrorPage = () => {
                     </button>
                 </div>
 
-                {/* Loading Animation */}
+                {/* Loading Spinner */}
                 <div className="mt-10 flex justify-center">
                     <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
