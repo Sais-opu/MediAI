@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
 
 const Navbar = () => {
+    const { user, logout } = useContext(AuthContext);
+
     return (
         <div className="navbar bg-base-100 shadow-sm">
             {/* Navbar Start */}
@@ -28,7 +32,7 @@ const Navbar = () => {
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow"
                     >
-                        <li><a>Item 1</a></li>
+                        <li><Link to="/">Home</Link></li>
                         <li>
                             <a>Parent</a>
                             <ul className="p-2">
@@ -36,16 +40,18 @@ const Navbar = () => {
                                 <li><a>Submenu 2</a></li>
                             </ul>
                         </li>
-                        <li><a>Item 3</a></li>
+                        <li><Link to="/about">About</Link></li>
                     </ul>
                 </div>
-                <a className="btn btn-ghost text-xl normal-case">daisyUI</a>
+                <Link to="/" className="btn btn-ghost text-xl normal-case">
+                    MediAi
+                </Link>
             </div>
 
             {/* Navbar Center (desktop) */}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
-                    <li><a>Item 1</a></li>
+                    <li><Link to="/">Home</Link></li>
                     <li>
                         <details>
                             <summary>Parent</summary>
@@ -55,13 +61,29 @@ const Navbar = () => {
                             </ul>
                         </details>
                     </li>
-                    <li><a>Item 3</a></li>
+                    <li><Link to="/about">About</Link></li>
                 </ul>
             </div>
 
             {/* Navbar End */}
             <div className="navbar-end">
-                <a className="btn btn-primary">Button</a>
+                {user ? (
+                    <>
+                        <span className="mr-2">Hi, {user.fullName || user.email}</span>
+                        <button className="btn btn-outline btn-warning" onClick={logout}>
+                            Logout
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login" className="btn btn-primary mr-2">
+                            Login
+                        </Link>
+                        <Link to="/register" className="btn btn-secondary">
+                            Register
+                        </Link>
+                    </>
+                )}
             </div>
         </div>
     );
