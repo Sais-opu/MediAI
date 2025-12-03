@@ -12,6 +12,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Login from './Components/Auth/Login.jsx';
 import Register from './Components/Auth/Register.jsx';
 import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
+import UserSettings from './Components/Usersettings/usersettings.jsx';
+import ProtectedRoute from './Components/Auth/ProtectedRoute.jsx';
 
 
 const router = createBrowserRouter([
@@ -31,6 +33,14 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/user-settings",
+        element: (
+          <ProtectedRoute>
+            <UserSettings />
+          </ProtectedRoute>
+        ),
       }
     ]
   },

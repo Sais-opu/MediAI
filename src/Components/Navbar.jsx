@@ -69,7 +69,9 @@ const Navbar = () => {
             <div className="navbar-end">
                 {user ? (
                     <>
-                        <span className="mr-2">Hi, {user.fullName || user.email}</span>
+                        <Link to="/user-settings" className="mr-2 text-primary hover:text-primary-focus hover:underline cursor-pointer">
+                            {user.fullName || user.email}
+                        </Link>
                         <button className="btn btn-outline btn-warning" onClick={logout}>
                             Logout
                         </button>
