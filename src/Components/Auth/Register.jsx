@@ -90,13 +90,15 @@ const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [photoURL, setPhotoURL] = useState("");
+    const [gender, setGender] = useState("");
+    const [dob, setDob] = useState("");
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        if (!fullName || !email || !password) {
-            toast.error("Full name, email, and password are required");
+        if (!fullName || !email || !password || !gender || !dob) {
+            toast.error("Full name, email, password, gender, and date of birth are required");
             return;
         }
 
@@ -106,6 +108,8 @@ const Register = () => {
                 email,
                 password,   // include password
                 photoURL,
+                gender,
+                dob,
             };
 
             // Register user in backend
@@ -161,6 +165,29 @@ const Register = () => {
                     className="input input-bordered w-full"
                     value={photoURL}
                     onChange={e => setPhotoURL(e.target.value)}
+                />
+
+                <select
+                    className="input input-bordered w-full"
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    required
+                >
+                    <option value="" disabled>
+                        Select Gender
+                    </option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                
+                <input
+                    type="date"
+                    placeholder="Date of Birth"
+                    className="input input-bordered w-full"
+                    value={dob}
+                    onChange={e => setDob(e.target.value)}
+                    required
                 />
 
                 <button type="submit" className="btn btn-primary w-full">
