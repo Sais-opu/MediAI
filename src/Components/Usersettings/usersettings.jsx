@@ -552,13 +552,15 @@ const UserSettings = () => {
                                 <label className="label">
                                     <span className="label-text font-semibold text-gray-700">Bio</span>
                                 </label>
+                                <br />
                                 <textarea 
-                                    className={`textarea textarea-bordered h-24 transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                                    className={`textarea textarea-bordered h-24 transition-all text-gray-800 
+                                        ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                                     placeholder="Tell us about your professional background..." 
                                     value={formData.bio} 
                                     onChange={(e) => setFormData({...formData, bio: e.target.value})}
                                     disabled={!isEditing}
-                                ></textarea>
+                                    ></textarea>
                             </div>
                         </>
                     )}
