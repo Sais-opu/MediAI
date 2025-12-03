@@ -450,7 +450,8 @@ const UserSettings = () => {
                         </label>
                         <input 
                             type="text" 
-                            className={`input input-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                            className={`input input-bordered w-full transition-all text-gray-800 
+                                ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                             value={formData.name} 
                             onChange={(e) => setFormData({...formData, name: e.target.value})} 
                             disabled={!isEditing} 
@@ -463,7 +464,8 @@ const UserSettings = () => {
                         </label>
                         <input 
                             type="date" 
-                            className={`input input-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                            className={`input input-bordered w-full transition-all text-gray-800 
+                                ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                             value={formData.dob ? formData.dob.split('T')[0] : ''} 
                             onChange={(e) => setFormData({...formData, dob: e.target.value})} 
                             disabled={!isEditing} 
@@ -475,7 +477,8 @@ const UserSettings = () => {
                             <span className="label-text font-semibold text-gray-700">Gender</span>
                         </label>
                         <select 
-                            className={`select select-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                            className={`select select-bordered w-full transition-all text-gray-800 
+                                ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                             value={formData.gender} 
                             onChange={(e) => setFormData({...formData, gender: e.target.value})} 
                             disabled={!isEditing}
@@ -515,7 +518,8 @@ const UserSettings = () => {
                                 </label>
                                 <input 
                                     type="text" 
-                                    className={`input input-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                                    className={`input input-bordered w-full transition-all text-gray-800 
+                                        ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                                     placeholder="e.g., Cardiology, Neurology" 
                                     value={formData.specialization} 
                                     onChange={(e) => setFormData({...formData, specialization: e.target.value})} 
@@ -528,7 +532,8 @@ const UserSettings = () => {
                                 </label>
                                 <input 
                                     type="text" 
-                                    className={`input input-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                                    className={`input input-bordered w-full transition-all text-gray-800 
+                                        ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                                     placeholder="e.g., MBBS, MD, PhD" 
                                     value={formData.qualifications} 
                                     onChange={(e) => setFormData({...formData, qualifications: e.target.value})} 
@@ -541,7 +546,8 @@ const UserSettings = () => {
                                 </label>
                                 <input 
                                     type="number" 
-                                    className={`input input-bordered w-full transition-all text-gray-800 ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
+                                    className={`input input-bordered w-full transition-all text-gray-800 
+                                        ${!isEditing ? 'bg-gray-50' : 'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'}`}
                                     placeholder="0" 
                                     value={formData.experience} 
                                     onChange={(e) => setFormData({...formData, experience: e.target.value})} 
