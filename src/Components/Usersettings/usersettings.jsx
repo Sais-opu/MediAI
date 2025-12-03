@@ -8,6 +8,7 @@ const UserSettings = () => {
     const { user } = useContext(AuthContext);
     const [isEditing, setIsEditing] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [role, setRole] = useState("patient"); // or "doctor"
     const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -161,6 +162,27 @@ const UserSettings = () => {
 
     // Ref for file input
     const fileInputRef = useRef(null);
+
+    // Handle cancel confirmation
+    const handleCancelConfirm = () => {
+        // Restore original data
+        setFormData(originalFormData);
+        setProfilePicture(null);
+        setProfilePicturePreview(originalProfilePicturePreview);
+        setIsEditing(false);
+        setShowCancelConfirm(false);
+    };
+
+    // Handle save from modal
+    const handleSaveFromModal = async (e) => {
+        e?.preventDefault();
+        setShowCancelConfirm(false);
+        // Create a synthetic event and call handleProfileUpdate
+        const syntheticEvent = {
+            preventDefault: () => {}
+        };
+        await handleProfileUpdate(syntheticEvent);
+    };
 
     // 2. Handle Profile Update
     const handleProfileUpdate = async (e) => {
@@ -370,23 +392,28 @@ const UserSettings = () => {
                     </div>
                     <button 
                         type="button"
-                        className={`btn btn-sm md:btn-md mt-3 sm:mt-0 ${isEditing ? 'btn-ghost' : 'btn-primary'}`}
+                        className="btn btn-sm md:btn-md btn-ghost btn-error mt-3 sm:mt-0"
                         onClick={() => {
                             if (isEditing) {
-                                // Cancel: restore original data
-                                setFormData(originalFormData);
-                                setProfilePicture(null);
-                                setProfilePicturePreview(originalProfilePicturePreview);
+                                // Show confirmation modal
+                                setShowCancelConfirm(true);
+                            } else {
+                                setIsEditing(true);
                             }
-                            setIsEditing(!isEditing);
                         }}
                     >
                         {isEditing ? (
                             <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                                 Cancel
                             </>
                         ) : (
                             <>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
                                 Edit Profile
                             </>
                         )}
@@ -637,7 +664,7 @@ const UserSettings = () => {
                             </button>
                             <button 
                                 type="button"
-                                className="btn btn-ghost"
+                                className="btn btn-sm md:btn-md btn-ghost btn-error mt-3 sm:mt-0"
                                 onClick={() => {
                                     setShowPasswordForm(false);
                                     setPassData({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
@@ -650,6 +677,39 @@ const UserSettings = () => {
                 )}
             </div>
             </div>
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelConfirm && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg mb-4">Do you want to exit?</h3>
+                        <p className="py-4 text-gray-600">
+                            You have unsaved changes. Do you want to save your changes before exiting?
+                        </p>
+                        <div className="modal-action">
+                            <button 
+                                className="btn btn-ghost"
+                                onClick={() => setShowCancelConfirm(false)}
+                            >
+                                Go Back
+                            </button>
+                            <button 
+                                className="btn btn-error bg-red-500 hover:bg-red-600 text-white border-none"
+                                onClick={handleCancelConfirm}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="btn btn-primary"
+                                onClick={handleSaveFromModal}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                    <div className="modal-backdrop" onClick={() => setShowCancelConfirm(false)}></div>
+                </div>
+            )}
         </div>
     );
 };
