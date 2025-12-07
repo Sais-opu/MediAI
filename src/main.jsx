@@ -31,7 +31,7 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
-      }
+      },
     ]
   },
   // add more routes as needed
