@@ -113,6 +113,13 @@ const UserSettings = () => {
                     setUserId(userData._id);
                 }
                 
+                // Update role from user data (backend is source of truth)
+                if (userData.userRole) {
+                    const userRole = userData.userRole.toLowerCase();
+                    setRole(userRole === 'doctor' ? 'doctor' : 'patient');
+                    console.log("Role set from user data:", userData.userRole, "->", userRole === 'doctor' ? 'doctor' : 'patient');
+                }
+                
                 const initialFormData = {
                     name: userData.fullName || userData.name || "",
                     email: userData.email || user?.email || "",
@@ -127,6 +134,8 @@ const UserSettings = () => {
                 };
                 
                 console.log("Initial form data:", initialFormData);
+                console.log("Role from backend:", userData.userRole);
+                console.log("Role state will be set to:", userData.userRole ? (userData.userRole.toLowerCase() === 'doctor' ? 'doctor' : 'patient') : role);
                 setFormData(initialFormData);
                 setOriginalFormData(initialFormData);
                 
@@ -143,7 +152,7 @@ const UserSettings = () => {
                     const fallbackData = {
                         ...formData,
                         email: user.email || "",
-                        name: user.fullName || user.name || "",
+                        name: user.fullName || "",
                     };
                     setFormData(fallbackData);
                     setOriginalFormData(fallbackData);
@@ -568,7 +577,10 @@ const UserSettings = () => {
                     </div>
 
                     {/* Doctor Only Fields */}
-                    {role === 'doctor' && (
+                    {(() => {
+                        console.log("Rendering doctor fields check. Current role:", role);
+                        return role === 'doctor';
+                    })() && (
                         <>
                             <div className="form-control md:col-span-2 mt-2">
                                 <div className="divider">
