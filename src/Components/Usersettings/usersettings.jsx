@@ -16,11 +16,12 @@ const UserSettings = () => {
     // --- Profile Info ---
     const [formData, setFormData] = useState({
         name: "",
-        email: "", // Read-only
+        email: "",
         phone: "",
         dob: "",
         gender: "",
         photoURL: "",
+
         // Doctor specific fields
         specialization: "",
         qualifications: "",
@@ -73,7 +74,7 @@ const UserSettings = () => {
         }
     }, []);
 
-    // 1. Fetch User Data on Mount
+    // 1. Fetch User Data
     useEffect(() => {
         const fetchUserData = async () => {
             const token = localStorage.getItem("authToken");
@@ -84,7 +85,6 @@ const UserSettings = () => {
             }
 
             try {
-                // First try to get user profile from token (doesn't require userId)
                 console.log("Fetching user profile from token...");
                 let response;
                 try {
@@ -94,7 +94,6 @@ const UserSettings = () => {
                         }
                     });
                 } catch (profileError) {
-                    // If that fails and we have userId, try the userId endpoint
                     if (userId) {
                         console.log("Profile endpoint failed, trying userId endpoint...");
                         response = await axios.get(`http://localhost:5000/api/user/${userId}`, {
@@ -110,7 +109,6 @@ const UserSettings = () => {
                 console.log("User data received:", response.data);
                 const userData = response.data;
                 
-                // Update userId if we got it from the response
                 if (userData._id && !userId) {
                     setUserId(userData._id);
                 }
@@ -155,16 +153,15 @@ const UserSettings = () => {
         };
 
         fetchUserData();
-    }, []); // Only run once on mount - we use token-based endpoint
+    }, []); 
 
-    // Handle profile picture file selection
+    //profile picture file selection
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setProfilePicture(file);
-            // Clear URL when file is selected
             setFormData({...formData, photoURL: ""});
-            // Create preview
+            // preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProfilePicturePreview(reader.result);
@@ -189,7 +186,7 @@ const UserSettings = () => {
     // Ref for file input
     const fileInputRef = useRef(null);
 
-    // Handle cancel confirmation
+    // cancel confirmation
     const handleCancelConfirm = () => {
         // Restore original data
         setFormData(originalFormData);
@@ -199,11 +196,10 @@ const UserSettings = () => {
         setShowCancelConfirm(false);
     };
 
-    // Handle save from modal
+    // save from modal
     const handleSaveFromModal = async (e) => {
         e?.preventDefault();
         setShowCancelConfirm(false);
-        // Create a synthetic event and call handleProfileUpdate
         const syntheticEvent = {
             preventDefault: () => {}
         };
@@ -218,21 +214,34 @@ const UserSettings = () => {
             return;
         }
 
+        // Check if userId exists
+        if (!userId) {
+            toast.error("User ID not found. Please refresh the page.");
+            return;
+        }
+
+        // Check if token exists
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Authentication token not found. Please log in again.");
+            return;
+        }
+
         try {
             const formDataToSend = new FormData();
             
             // Add text fields
-            formDataToSend.append('fullName', formData.name);
-            formDataToSend.append('phone', formData.phone);
-            formDataToSend.append('dob', formData.dob);
-            formDataToSend.append('gender', formData.gender);
+            formDataToSend.append('fullName', formData.name || "");
+            formDataToSend.append('phone', formData.phone || "");
+            formDataToSend.append('dob', formData.dob || "");
+            formDataToSend.append('gender', formData.gender || "");
             
             // Add doctor-specific fields if role is doctor
             if (role === 'doctor') {
-                formDataToSend.append('specialization', formData.specialization);
-                formDataToSend.append('qualifications', formData.qualifications);
-                formDataToSend.append('experience', formData.experience);
-                formDataToSend.append('bio', formData.bio);
+                formDataToSend.append('specialization', formData.specialization || "");
+                formDataToSend.append('qualifications', formData.qualifications || "");
+                formDataToSend.append('experience', formData.experience || "");
+                formDataToSend.append('bio', formData.bio || "");
             }
 
             // Add profile picture if selected
@@ -242,28 +251,50 @@ const UserSettings = () => {
                 formDataToSend.append('photoURL', formData.photoURL);
             }
 
-            const token = localStorage.getItem("authToken");
-            await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            console.log("Sending update request with token:", token ? "Token present" : "No token");
+            console.log("User ID:", userId);
+            
+            const response = await axios.post(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
             toast.success("Profile updated successfully.");
             
-            // Update original data with new data
-            setOriginalFormData(formData);
-            if (profilePicturePreview) {
-                setOriginalProfilePicturePreview(profilePicturePreview);
+            // Update form data with response from server
+            if (response.data && response.data.user) {
+                const updatedUserData = response.data.user;
+                const updatedFormData = {
+                    name: updatedUserData.fullName || updatedUserData.name || "",
+                    email: updatedUserData.email || formData.email || "",
+                    phone: updatedUserData.phone || updatedUserData.phoneNumber || "",
+                    dob: updatedUserData.dob || "",
+                    gender: updatedUserData.gender || "",
+                    photoURL: updatedUserData.photoURL || "",
+                    specialization: updatedUserData.specialization || "",
+                    qualifications: updatedUserData.qualifications || "",
+                    experience: updatedUserData.experience || "",
+                    bio: updatedUserData.bio || ""
+                };
+                
+                setFormData(updatedFormData);
+                setOriginalFormData(updatedFormData);
+                
+                if (updatedUserData.photoURL && updatedUserData.photoURL !== "default-url") {
+                    setProfilePicturePreview(updatedUserData.photoURL);
+                    setOriginalProfilePicturePreview(updatedUserData.photoURL);
+                }
+            } else {
+                // Fallback: update with current form data
+                setOriginalFormData(formData);
+                if (profilePicturePreview) {
+                    setOriginalProfilePicturePreview(profilePicturePreview);
+                }
             }
             
             setIsEditing(false);
             setProfilePicture(null);
-            // Keep the preview if it was from URL, otherwise clear it
-            if (!formData.photoURL && !profilePicturePreview.includes('data:')) {
-                setProfilePicturePreview("");
-            }
         } catch (error) {
             if (error.response?.data?.message) {
                 toast.error(error.response.data.message);
@@ -308,7 +339,6 @@ const UserSettings = () => {
                 setShowPasswordForm(false);
             }
         } catch (error) {
-            // Backend should return 400 if current password is wrong
             const errorMessage = error.response?.data?.message || "Current password doesn't match.";
             toast.error(errorMessage);
         }
@@ -338,6 +368,9 @@ const UserSettings = () => {
             {/* Main Content Card */}
             <div className="bg-white rounded-b-2xl shadow-xl -mt-2 p-6 md:p-8">
 
+
+
+
             {/* --- SECTION 1: PROFILE PICTURE --- */}
             <div className="mb-10 text-center bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-100">
                 <div className="avatar mb-4">
@@ -345,7 +378,7 @@ const UserSettings = () => {
                         {profilePicturePreview ? (
                             <img src={profilePicturePreview} alt="Profile Preview" className="rounded-full object-cover" />
                         ) : formData.photoURL ? (
-                            <img src={formData.photoURL} alt="Profile" className="rounded-full object-cover" />
+                            <img src="/src/assets/default-url.jpg" className="rounded-full object-cover" />
                         ) : (
                             <div className="w-full h-full bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center text-5xl md:text-6xl text-white font-bold shadow-inner">
                                 {formData.name ? formData.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
@@ -408,6 +441,10 @@ const UserSettings = () => {
                     </div>
                 )}
             </div>
+
+
+
+
 
             {/* --- SECTION 2: EDIT PROFILE --- */}
             <div className="mb-10 bg-gray-50 rounded-xl p-6 border border-gray-200">
@@ -530,7 +567,7 @@ const UserSettings = () => {
                         />
                     </div>
 
-                    {/* Conditional Rendering: Doctor Only Fields */}
+                    {/* Doctor Only Fields */}
                     {role === 'doctor' && (
                         <>
                             <div className="form-control md:col-span-2 mt-2">
@@ -609,6 +646,10 @@ const UserSettings = () => {
                     )}
                 </form>
             </div>
+
+
+
+
 
             {/* --- SECTION 3: CHANGE PASSWORD --- */}
             <div className="bg-red-50 rounded-xl p-6 border-2 border-red-100">
@@ -711,6 +752,9 @@ const UserSettings = () => {
                 )}
             </div>
             </div>
+
+
+
 
             {/* Cancel Confirmation Modal */}
             {showCancelConfirm && (
