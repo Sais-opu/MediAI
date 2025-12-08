@@ -254,7 +254,7 @@ const UserSettings = () => {
             console.log("Sending update request with token:", token ? "Token present" : "No token");
             console.log("User ID:", userId);
             
-            const response = await axios.post(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
