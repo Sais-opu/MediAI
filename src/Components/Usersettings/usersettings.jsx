@@ -60,76 +60,102 @@ const UserSettings = () => {
         if (token) {
             try {
                 const decoded = jwt_decode.default(token);
-                setUserId(decoded.userId || decoded.id);
+                console.log("Decoded token:", decoded); // Debug log
+                const extractedUserId = decoded.userId || decoded.id;
+                console.log("Extracted userId:", extractedUserId); // Debug log
+                setUserId(extractedUserId);
                 setRole(decoded.userRole || "patient");
             } catch (err) {
                 console.error("Error decoding token", err);
             }
+        } else {
+            console.error("No auth token found in localStorage");
         }
     }, []);
 
     // 1. Fetch User Data on Mount
     useEffect(() => {
         const fetchUserData = async () => {
-            if (userId) {
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                console.error("No auth token found");
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // First try to get user profile from token (doesn't require userId)
+                console.log("Fetching user profile from token...");
+                let response;
                 try {
-                    const token = localStorage.getItem("authToken");
-                    const response = await axios.get(`http://localhost:5000/api/user/${userId}`, {
+                    response = await axios.get(`http://localhost:5000/users/profile`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
-                    
-                    const userData = response.data;
-                    const initialFormData = {
-                        name: userData.fullName || userData.name || "",
-                        email: userData.email || user?.email || "",
-                        phone: userData.phone || "",
-                        dob: userData.dob || "",
-                        gender: userData.gender || "",
-                        photoURL: userData.photoURL || "",
-                        specialization: userData.specialization || "",
-                        qualifications: userData.qualifications || "",
-                        experience: userData.experience || "",
-                        bio: userData.bio || ""
-                    };
-                    
-                    setFormData(initialFormData);
-                    setOriginalFormData(initialFormData);
-                    
-                    if (userData.photoURL) {
-                        setProfilePicturePreview(userData.photoURL);
-                        setOriginalProfilePicturePreview(userData.photoURL);
+                } catch (profileError) {
+                    // If that fails and we have userId, try the userId endpoint
+                    if (userId) {
+                        console.log("Profile endpoint failed, trying userId endpoint...");
+                        response = await axios.get(`http://localhost:5000/api/user/${userId}`, {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        });
+                    } else {
+                        throw profileError;
                     }
-                    
-                    setLoading(false);
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                    if (user) {
-                        const fallbackData = {
-                            ...formData,
-                            email: user.email || "",
-                            name: user.fullName || user.name || "",
-                        };
-                        setFormData(fallbackData);
-                        setOriginalFormData(fallbackData);
-                    }
-                    setLoading(false);
                 }
-            } else if (user) {
-                const fallbackData = {
-                    ...formData,
-                    email: user.email || "",
-                    name: user.fullName || user.name || "",
+                
+                console.log("User data received:", response.data);
+                const userData = response.data;
+                
+                // Update userId if we got it from the response
+                if (userData._id && !userId) {
+                    setUserId(userData._id);
+                }
+                
+                const initialFormData = {
+                    name: userData.fullName || userData.name || "",
+                    email: userData.email || user?.email || "",
+                    phone: userData.phone || userData.phoneNumber || "",
+                    dob: userData.dob || "",
+                    gender: userData.gender || "",
+                    photoURL: userData.photoURL || "",
+                    specialization: userData.specialization || "",
+                    qualifications: userData.qualifications || "",
+                    experience: userData.experience || "",
+                    bio: userData.bio || ""
                 };
-                setFormData(fallbackData);
-                setOriginalFormData(fallbackData);
+                
+                console.log("Initial form data:", initialFormData);
+                setFormData(initialFormData);
+                setOriginalFormData(initialFormData);
+                
+                if (userData.photoURL && userData.photoURL !== "default-url") {
+                    setProfilePicturePreview(userData.photoURL);
+                    setOriginalProfilePicturePreview(userData.photoURL);
+                }
+                
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                console.error("Error response:", error.response?.data);
+                if (user) {
+                    const fallbackData = {
+                        ...formData,
+                        email: user.email || "",
+                        name: user.fullName || user.name || "",
+                    };
+                    setFormData(fallbackData);
+                    setOriginalFormData(fallbackData);
+                }
                 setLoading(false);
             }
         };
 
         fetchUserData();
-    }, [userId, user]);
+    }, []); // Only run once on mount - we use token-based endpoint
 
     // Handle profile picture file selection
     const handleProfilePictureChange = (e) => {
