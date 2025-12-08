@@ -1,9 +1,15 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     return (
         <div className="navbar bg-base-100 shadow-sm">
@@ -72,7 +78,7 @@ const Navbar = () => {
                         <Link to="/user-settings" className="mr-2 text-primary hover:text-primary-focus hover:underline cursor-pointer">
                             {user.fullName || user.email}
                         </Link>
-                        <button className="btn btn-outline btn-warning" onClick={logout}>
+                        <button className="btn btn-outline btn-warning" onClick={handleLogout}>
                             Logout
                         </button>
                     </>
