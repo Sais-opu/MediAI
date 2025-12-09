@@ -35,12 +35,8 @@ const Navbar = () => {
                         <li><Link to="/">Home</Link></li>
                         <li>
                             <a>Parent</a>
-                            <ul className="p-2">
-                                <li><a>Submenu 1</a></li>
-                                <li><a>Submenu 2</a></li>
-                            </ul>
                         </li>
-                        <li><Link to="/about">About</Link></li>
+                        <li><Link to="/users">Activity Log</Link></li>
                     </ul>
                 </div>
                 <Link to="/" className="btn btn-ghost text-xl normal-case">
@@ -55,13 +51,9 @@ const Navbar = () => {
                     <li>
                         <details>
                             <summary>Parent</summary>
-                            <ul className="p-2">
-                                <li><a>Submenu 1</a></li>
-                                <li><a>Submenu 2</a></li>
-                            </ul>
                         </details>
                     </li>
-                    <li><Link to="/about">About</Link></li>
+                    <li><Link to="/users">Activity Log</Link></li>
                 </ul>
             </div>
 
