@@ -84,8 +84,7 @@ const Users = () => {
         }
     };
 
-    const handleRoleChange = async (userId, currentRole) => {
-        const newRole = currentRole === "user" ? "doctor" : "user";
+    const handleRoleChange = async (userId, newRole) => {
         try {
             await axios.put(
                 `http://localhost:5000/users/role`,
@@ -123,6 +122,7 @@ const Users = () => {
                     <option value="">All Roles</option>
                     <option value="user">User</option>
                     <option value="doctor">Doctor</option>
+                    <option value="admin">Admin</option>
                 </select>
                 <input
                     type="date"
@@ -174,12 +174,19 @@ const Users = () => {
                                         >
                                             Delete
                                         </button>
-                                        <button
-                                            onClick={() => handleRoleChange(user._id, user.userRole)}
-                                            className="btn btn-sm btn-warning"
+
+                                        {/* Role Dropdown */}
+                                        <select
+                                            value={user.userRole}
+                                            onChange={(e) =>
+                                                handleRoleChange(user._id, e.target.value)
+                                            }
+                                            className="select select-sm select-bordered"
                                         >
-                                            Change Role
-                                        </button>
+                                            <option value="user">User</option>
+                                            <option value="doctor">Doctor</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
                                     </td>
                                 </tr>
                             ))}
