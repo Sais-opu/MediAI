@@ -9,7 +9,11 @@ import ErrorPage from './Components/ErrorPage.jsx'
 import Home from './Components/Home/Home.jsx'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import Login from './Components/Auth/Login.jsx';
+import Register from './Components/Auth/Register.jsx';
+import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
+import Users from './Components/Users/Users.jsx';
+import Protected from './Components/Auth/ProtectedRoute.jsx'
 
 const router = createBrowserRouter([
   {
@@ -20,7 +24,19 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
-      }
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/users",
+        element: <Protected><Users /></Protected >,
+      },
     ]
   },
   // add more routes as needed
@@ -28,19 +44,21 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
-    <ToastContainer
-      position="top-center"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="light"
-    />
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </AuthProvider>
 
   </StrictMode>,
 )
