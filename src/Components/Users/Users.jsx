@@ -127,6 +127,7 @@ const Users = () => {
                 <input
                     type="date"
                     name="registrationDate"
+                    placeholder="Select registration date"
                     className="input input-bordered w-full"
                     value={filters.registrationDate}
                     onChange={handleFilterChange}
