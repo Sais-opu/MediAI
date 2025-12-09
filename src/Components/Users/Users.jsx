@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -100,11 +100,11 @@ const Users = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto mt-10 p-5">
+        <div className="max-w-7xl mx-auto mt-10 p-4 md:p-6">
             <h2 className="text-3xl font-bold mb-5 text-center">Registered Users</h2>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <input
                     type="text"
                     name="search"
@@ -127,14 +127,16 @@ const Users = () => {
                 <input
                     type="date"
                     name="registrationDate"
-                    placeholder="Select registration date"
                     className="input input-bordered w-full"
                     value={filters.registrationDate}
                     onChange={handleFilterChange}
                 />
             </div>
 
-            <button onClick={applyFilters} className="btn btn-primary mb-5">
+            <button
+                onClick={applyFilters}
+                className="btn btn-primary mb-5 w-full md:w-auto"
+            >
                 Apply Filters
             </button>
 
@@ -149,7 +151,7 @@ const Users = () => {
                 </p>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="table table-zebra w-full">
+                    <table className="table table-zebra w-full min-w-[600px] md:min-w-full">
                         <thead>
                             <tr className="bg-base-200">
                                 <th>User ID</th>
@@ -163,26 +165,25 @@ const Users = () => {
                         <tbody>
                             {users.map((user) => (
                                 <tr key={user._id}>
-                                    <td>{user._id}</td>
+                                    <td className="break-words">{user._id}</td>
                                     <td>{user.fullName}</td>
                                     <td>{user.email}</td>
                                     <td>{user.userRole}</td>
                                     <td>{new Date(user.registrationDate).toLocaleDateString()}</td>
-                                    <td className="flex gap-2">
+                                    <td className="flex flex-col sm:flex-row gap-2">
                                         <button
                                             onClick={() => handleDelete(user._id)}
-                                            className="btn btn-sm btn-error"
+                                            className="btn btn-sm btn-error w-full sm:w-auto"
                                         >
                                             Delete
                                         </button>
 
-                                        {/* Role Dropdown */}
                                         <select
                                             value={user.userRole}
                                             onChange={(e) =>
                                                 handleRoleChange(user._id, e.target.value)
                                             }
-                                            className="select select-sm select-bordered"
+                                            className="select select-sm select-bordered w-full sm:w-auto"
                                         >
                                             <option value="user">User</option>
                                             <option value="doctor">Doctor</option>

@@ -263,6 +263,7 @@ const Navbar = () => {
     // Define navigation items based on auth state and role
     const getNavItems = () => {
         if (!user) {
+            // without login (guest)
             return [
                 { name: 'Home', path: '/' },
                 { name: 'Doctors', path: '/doctors' },
@@ -286,12 +287,11 @@ const Navbar = () => {
         if (userRole === 'doctor') {
             return [
                 { name: 'Home', path: '/' },
-                { name: 'My Appointments', path: '/doctor/appointments' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Reports', path: '/doctor/reports' },
             ];
         }
-
+        // users
         return [
             { name: 'Home', path: '/' },
             { name: 'Find Doctors', path: '/doctors' },
