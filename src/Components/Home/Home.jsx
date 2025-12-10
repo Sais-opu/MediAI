@@ -1,30 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Activity,
-    Brain,
-    ShieldCheck,
-    Zap,
-    ArrowRight,
-    CheckCircle2,
-    Search,
-    Bell,
-    Plus,
-    Minus,
-    Dna,
-    Cpu,
-    Microscope,
-    Watch,
-    Database,
-    Pill,
-    FileHeart,
-    Smartphone
-} from 'lucide-react';
+import { Activity, Brain, ShieldCheck, Zap, ArrowRight, CheckCircle2, Search,Bell,
+     Plus, Minus, Dna, Cpu, Microscope, Watch, Database, Pill, FileHeart, Smartphone} from 'lucide-react';
+
+import { AuthContext } from '../Auth/AuthProvider'; 
+import Dashboard from '../Dashboard/Dashboard'; 
 
 const Home = () => {
     const { user } = useContext(AuthContext);
 
-    // If user is logged in, show dashboard
     if (user) {
         return <Dashboard />;
     }
