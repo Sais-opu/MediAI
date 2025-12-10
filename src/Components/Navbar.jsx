@@ -285,9 +285,10 @@ const Navbar = () => {
         if (userRole === 'admin') {
             return [
                 { name: 'Home', path: '/' },
-                { name: 'All Users', path: '/users' },
+                { name: 'Users', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
                 { name: 'Appointments', path: '/admin/appointments' },
+                { name: 'Medicines', path: '/admin/medicines' },
                 { name: 'Reports', path: '/admin/reports' },
             ];
         }
