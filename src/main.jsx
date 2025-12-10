@@ -14,7 +14,7 @@ import Register from './Components/Auth/Register.jsx';
 import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
-import UserSettings from './Components/Usersettings/usersettings.jsx';
+import UserSettings from './Components/Profiles/usersettings.jsx';
 
 const router = createBrowserRouter([
   {
@@ -36,14 +36,17 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: <Protected><Users /></Protected >,
+        element: 
+          <Protected>
+            <Users />
+          </Protected >,
       },
       {
         path: "/user-settings",
         element: (
-          <ProtectedRoute>
+          <Protected>
             <UserSettings />
-          </ProtectedRoute>
+          </Protected>
         ),
       }
     ]
