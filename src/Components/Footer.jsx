@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import logo from '../assets/logo.png';
 
 const Footer = () => {
@@ -6,13 +7,15 @@ const Footer = () => {
         <footer className="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
             {/* Logo / About */}
             <aside className="flex flex-col items-start">
-                <img 
-                    src={logo} 
-                    alt="MediAi Logo" 
-                    className="w-12 h-12 mb-2 object-contain"
+                <img
+                    src={logo}
+                    alt="MediAi Logo"
+                    className="w-50 h-50 mb-2 object-contain"
                 />
                 <p>
-                    MediAi
+                    <Link to="/" className="btn btn-ghost text-2xl font-bold text-primary">
+                        MediAI
+                    </Link>
                     <br />
                     Providing reliable tech since 2025
                 </p>

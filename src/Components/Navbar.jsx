@@ -278,7 +278,7 @@ const Navbar = () => {
             return [
                 { name: 'Home', path: '/' },
                 { name: 'Dashboard', path: '/admin/dashboard' },
-                { name: 'Users', path: '/users' },
+                { name: 'Activity Log', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
                 { name: 'Appointments', path: '/admin/appointments' },
                 { name: 'Reports', path: '/admin/reports' },
@@ -313,17 +313,17 @@ const Navbar = () => {
                 </Link>
             </div> */}
 
-            <div className="navbar-start flex items-center gap-2">
+            <div className="navbar-start flex items-center">
                 {/* Left side image */}
                 <img
                     src={logo}
                     alt="MediAi Logo"
-                    className="w-8 h-8 object-contain"
+                    className="w-25 h-25 object-contain"
                 />
 
                 {/* Text */}
                 <Link to="/" className="btn btn-ghost text-2xl font-bold text-primary">
-                    MediAi
+                    MediAI
                 </Link>
             </div>
 
