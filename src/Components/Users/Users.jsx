@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -12,11 +13,20 @@ const Users = () => {
         registrationDate: "",
     });
 
-    const token = localStorage.getItem("authToken");
+    const navigate = useNavigate();
 
     const fetchUsers = async () => {
         setLoading(true);
         setError("");
+
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            setLoading(false);
+            toast.error("Please log in to view users.");
+            navigate("/login");
+            return;
+        }
+
         try {
             const res = await axios.get("http://localhost:5000/users", {
                 headers: { Authorization: `Bearer ${token}` },
@@ -51,7 +61,14 @@ const Users = () => {
             setUsers(filtered);
         } catch (err) {
             console.error(err);
-            setError("Unable to fetch users. Try again later.");
+            const status = err.response?.status;
+            if (status === 401 || status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else {
+                setError("Unable to fetch users. Try again later.");
+                toast.error("Unable to fetch users. Try again later.");
+            }
         } finally {
             setLoading(false);
         }
