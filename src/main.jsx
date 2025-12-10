@@ -14,6 +14,8 @@ import Register from './Components/Auth/Register.jsx';
 import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
+import Appoinments from './Components/MyAppinments/Appoinments.jsx'
+
 
 const router = createBrowserRouter([
   {
@@ -36,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "/users",
         element: <Protected><Users /></Protected >,
+      },
+      {
+        path: "/appoinments",
+        element: <Protected><Appoinments /></Protected >,
       },
     ]
   },
