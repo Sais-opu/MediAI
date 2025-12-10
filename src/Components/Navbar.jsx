@@ -227,6 +227,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
 import axios from 'axios';
+import logo from '../assets/logo.png'; 
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -285,10 +286,10 @@ const Navbar = () => {
         if (userRole === 'admin') {
             return [
                 { name: 'Home', path: '/' },
-                { name: 'Dashboard', path: '/admin/dashboard' },
-                { name: 'Users', path: '/users' },
+                { name: 'Activity Log', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
                 { name: 'Appointments', path: '/admin/appointments' },
+                { name: 'Medicines', path: '/admin/medicines' },
                 { name: 'Reports', path: '/admin/reports' },
             ];
         }
@@ -316,11 +317,26 @@ const Navbar = () => {
     return (
         <div className="navbar bg-base-100 shadow-md px-4 sticky top-0 z-50">
             {/* Logo */}
-            <div className="navbar-start">
+            {/* <div className="navbar-start">
                 <Link to="/" className="btn btn-ghost text-2xl font-bold text-primary">
                     MediAi
                 </Link>
+            </div> */}
+
+            <div className="navbar-start flex items-center">
+                {/* Left side image */}
+                <img
+                    src={logo}
+                    alt="MediAi Logo"
+                    className="w-25 h-25 object-contain"
+                />
+
+                {/* Text */}
+                <Link to="/" className="btn btn-ghost text-2xl font-bold text-primary">
+                    MediAI
+                </Link>
             </div>
+
 
             {/* Desktop Menu - Center */}
             <div className="navbar-center hidden lg:flex">
@@ -331,11 +347,10 @@ const Navbar = () => {
                             <li key={item.name}>
                                 <Link
                                     to={item.path}
-                                    className={`font-medium transition-colors ${
-                                        isActive
+                                    className={`font-medium transition-colors ${isActive
                                             ? 'bg-blue-500 text-white rounded-md px-2 py-1'
                                             : 'hover:text-primary'
-                                    }`}
+                                        }`}
                                 >
                                     {item.name}
                                 </Link>
@@ -356,7 +371,9 @@ const Navbar = () => {
                             </span>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={() => {
+                                logout();
+                            }}
                             className="btn btn-outline btn-error btn-sm"
                         >
                             Logout
@@ -407,11 +424,10 @@ const Navbar = () => {
                                 <li key={item.name}>
                                     <Link
                                         to={item.path}
-                                        className={`text-lg block px-2 py-1 rounded ${
-                                            isActive
+                                        className={`text-lg block px-2 py-1 rounded ${isActive
                                                 ? 'bg-blue-500 text-white'
                                                 : ''
-                                        }`}
+                                            }`}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         {item.name}
@@ -433,8 +449,8 @@ const Navbar = () => {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        logout();
                                         setIsMobileMenuOpen(false);
+                                        logout();
                                     }}
                                     className="btn btn-error w-full"
                                 >
