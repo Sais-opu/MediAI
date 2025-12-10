@@ -13,6 +13,7 @@ const UserSettings = () => {
     const [isOwner, setIsOwner] = useState(true);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [showRemovePicConfirm, setShowRemovePicConfirm] = useState(false);
     const [role, setRole] = useState("user");
     const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -230,6 +231,56 @@ const UserSettings = () => {
         await handleProfileUpdate(syntheticEvent);
     };
 
+    // Handle remove profile picture
+    const handleRemoveProfilePicture = async () => {
+        if (!userId || !isOwner) {
+            return;
+        }
+
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Authentication token not found. Please log in again.");
+            return;
+        }
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('photoURL', 'default-url');
+            
+            // Also send other current form data to maintain them
+            formDataToSend.append('fullName', formData.name || "");
+            formDataToSend.append('phone', formData.phone || "");
+            formDataToSend.append('dob', formData.dob || "");
+            formDataToSend.append('gender', formData.gender || "");
+            
+            if (role === 'doctor') {
+                formDataToSend.append('specialization', formData.specialization || "");
+                formDataToSend.append('qualifications', formData.qualifications || "");
+                formDataToSend.append('experience', formData.experience || "");
+                formDataToSend.append('bio', formData.bio || "");
+            }
+
+            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            toast.success("Profile picture removed successfully.");
+            
+            // Update state to show default image
+            setProfilePicturePreview(defaultProfilePic);
+            setOriginalProfilePicturePreview(defaultProfilePic);
+            setFormData({...formData, photoURL: "default-url"});
+            setOriginalFormData({...formData, photoURL: "default-url"});
+            setProfilePicture(null);
+            setShowRemovePicConfirm(false);
+        } catch (error) {
+            console.error("Error removing profile picture:", error);
+            toast.error(error.response?.data?.message || "Error removing profile picture.");
+        }
+    };
+
     // 2. Handle Profile Update
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -409,7 +460,7 @@ const UserSettings = () => {
                                     </div>
                                 </div>
                                 {isEditing && (
-                                    <div className="mt-4">
+                                    <div className="mt-4 space-y-2">
                                         <input 
                                             type="file" 
                                             ref={fileInputRef}
@@ -427,7 +478,7 @@ const UserSettings = () => {
                                         {profilePicture && (
                                             <button
                                                 type="button"
-                                                className="btn btn-sm btn-ghost w-full mt-2"
+                                                className="btn btn-sm btn-ghost w-full"
                                                 onClick={() => {
                                                     setProfilePicture(null);
                                                     setProfilePicturePreview(originalProfilePicturePreview);
@@ -436,7 +487,16 @@ const UserSettings = () => {
                                                     }
                                                 }}
                                             >
-                                                Clear
+                                                Clear New Photo
+                                            </button>
+                                        )}
+                                        {(profilePicturePreview && profilePicturePreview !== defaultProfilePic && !profilePicture) && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-error w-full"
+                                                onClick={() => setShowRemovePicConfirm(true)}
+                                            >
+                                                Remove Profile Picture
                                             </button>
                                         )}
                                     </div>
@@ -893,6 +953,33 @@ const UserSettings = () => {
                         </div>
                     </div>
                     <div className="modal-backdrop" onClick={() => setShowCancelConfirm(false)}></div>
+                </div>
+            )}
+
+            {/* Remove Profile Picture Confirmation Modal */}
+            {showRemovePicConfirm && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg mb-4">Remove Profile Picture?</h3>
+                        <p className="py-4 text-gray-600">
+                            Are you sure you want to remove your profile picture?
+                        </p>
+                        <div className="modal-action">
+                            <button 
+                                className="btn btn-ghost"
+                                onClick={() => setShowRemovePicConfirm(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="btn btn-error bg-red-500 hover:bg-red-600 text-white border-none"
+                                onClick={handleRemoveProfilePicture}
+                            >
+                                Remove Picture
+                            </button>
+                        </div>
+                    </div>
+                    <div className="modal-backdrop" onClick={() => setShowRemovePicConfirm(false)}></div>
                 </div>
             )}
         </div>
