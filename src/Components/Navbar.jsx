@@ -356,7 +356,9 @@ const Navbar = () => {
                             </span>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={() => {
+                                logout();
+                            }}
                             className="btn btn-outline btn-error btn-sm"
                         >
                             Logout
@@ -433,8 +435,8 @@ const Navbar = () => {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        logout();
                                         setIsMobileMenuOpen(false);
+                                        logout();
                                     }}
                                     className="btn btn-error w-full"
                                 >
