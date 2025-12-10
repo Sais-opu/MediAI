@@ -16,6 +16,19 @@ import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
 
+// Doctor features
+import DoctorList from './Components/Doctors/DoctorList.jsx';
+import DoctorProfile from './Components/Doctors/DoctorProfile.jsx';
+import DoctorSchedule from './Components/Doctors/DoctorSchedule.jsx';
+
+// Patient booking flow
+import BookingScreen from './Components/Booking/BookingScreen.jsx';
+import PaymentPage from './Components/Payment/PaymentPage.jsx';
+import InvoicePage from './Components/Payment/InvoicePage.jsx';
+
+
+
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -48,7 +61,54 @@ const router = createBrowserRouter([
             <UserSettings />
           </Protected>
         ),
-      }
+      }, 
+      // Doctor Routes
+      {
+        path: "/doctors",
+        element: <DoctorList />,
+      },
+      {
+        path: "/doctor/:id",
+        element: <DoctorProfile />,
+      },
+      {
+        path: "/doctor/:id/schedule",
+        element: (
+          <Protected>
+            <DoctorSchedule />
+          </Protected>
+        ),
+      },
+
+      // Patient Booking Flow
+      {
+        path: "/book-appointment/:doctorId",
+        element: (
+          <Protected>
+            <BookingScreen />
+          </Protected>
+        ),
+      },
+
+      // Payment
+      {
+        path: "/payment/:appointmentId",
+        element: (
+          <Protected>
+            <PaymentPage />
+          </Protected>
+        ),
+      },
+
+      // Invoice View/Download
+      {
+        path: "/invoice/:paymentId",
+        element: (
+          <Protected>
+            <InvoicePage />
+          </Protected>
+        ),
+      },
     ]
   },
   // add more routes as needed
