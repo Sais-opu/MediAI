@@ -286,10 +286,10 @@ const Navbar = () => {
         if (userRole === 'admin') {
             return [
                 { name: 'Home', path: '/' },
-                { name: 'Dashboard', path: '/admin/dashboard' },
                 { name: 'Activity Log', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
                 { name: 'Appointments', path: '/admin/appointments' },
+                { name: 'Medicines', path: '/admin/medicines' },
                 { name: 'Reports', path: '/admin/reports' },
             ];
         }
@@ -371,7 +371,9 @@ const Navbar = () => {
                             </span>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={() => {
+                                logout();
+                            }}
                             className="btn btn-outline btn-error btn-sm"
                         >
                             Logout
@@ -447,8 +449,8 @@ const Navbar = () => {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        logout();
                                         setIsMobileMenuOpen(false);
+                                        logout();
                                     }}
                                     className="btn btn-error w-full"
                                 >
