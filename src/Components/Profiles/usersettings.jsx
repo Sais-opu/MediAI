@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
 import * as jwt_decode from "jwt-decode";
+import defaultProfilePic from "../../assets/default-url.jpg";
 
 const UserSettings = () => {
     const { user } = useContext(AuthContext);
@@ -152,6 +153,10 @@ const UserSettings = () => {
                 if (userData.photoURL && userData.photoURL !== "default-url") {
                     setProfilePicturePreview(userData.photoURL);
                     setOriginalProfilePicturePreview(userData.photoURL);
+                } else {
+                    // Set default profile picture if no photo is set
+                    setProfilePicturePreview(defaultProfilePic);
+                    setOriginalProfilePicturePreview(defaultProfilePic);
                 }
                 
                 setLoading(false);
@@ -303,6 +308,10 @@ const UserSettings = () => {
                 if (updatedUserData.photoURL && updatedUserData.photoURL !== "default-url") {
                     setProfilePicturePreview(updatedUserData.photoURL);
                     setOriginalProfilePicturePreview(updatedUserData.photoURL);
+                } else {
+                    // Set default profile picture if no photo is set
+                    setProfilePicturePreview(defaultProfilePic);
+                    setOriginalProfilePicturePreview(defaultProfilePic);
                 }
             } else {
                 // Fallback: update with current form data
@@ -391,13 +400,11 @@ const UserSettings = () => {
                                 <div className="avatar">
                                     <div className="w-32 h-32 rounded-full ring-4 ring-primary/20 ring-offset-2 ring-offset-white">
                                         {profilePicturePreview ? (
-                                            <img src={profilePicturePreview} alt="Profile" className="rounded-full object-cover" />
-                                        ) : formData.photoURL ? (
-                                            <img src={formData.photoURL} alt="profile" className="rounded-full object-cover" />
+                                            <img src={profilePicturePreview} alt="Profile" className="rounded-full object-cover w-full h-full" />
+                                        ) : formData.photoURL && formData.photoURL !== "default-url" ? (
+                                            <img src={formData.photoURL} alt="profile" className="rounded-full object-cover w-full h-full" />
                                         ) : (
-                                            <div className="w-full h-full bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center text-5xl text-white font-bold">
-                                                {formData.name ? formData.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
-                                            </div>
+                                            <img src={defaultProfilePic} alt="Default Profile" className="rounded-full object-cover w-full h-full" />
                                         )}
                                     </div>
                                 </div>
