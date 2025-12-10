@@ -224,7 +224,7 @@
 // export default Navbar;
 
 import React, { useContext, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
 import axios from 'axios';
 
@@ -234,6 +234,7 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const token = localStorage.getItem('authToken');
     const location = useLocation();
+    const navigate = useNavigate();
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
@@ -253,12 +254,20 @@ const Navbar = () => {
                 setUserRole(res.data.role || 'user');
             } catch (err) {
                 console.error('Error fetching user role:', err);
-                setUserRole('user'); // fallback
+                const status = err.response?.status;
+                if (status === 401 || status === 403) {
+                    // Token invalid/expired – force logout and redirect
+                    localStorage.removeItem('authToken');
+                    logout();
+                    navigate('/login');
+                } else {
+                    setUserRole('user'); // fallback
+                }
             }
         };
 
         fetchUserRole();
-    }, [user, token]);
+    }, [user, token, logout, navigate]);
 
     // Define navigation items based on auth state and role
     const getNavItems = () => {
@@ -289,6 +298,7 @@ const Navbar = () => {
                 { name: 'Home', path: '/' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Reports', path: '/doctor/reports' },
+                { name: 'Profile', path: '/user-settings' }
             ];
         }
         // users
@@ -297,7 +307,7 @@ const Navbar = () => {
             { name: 'Find Doctors', path: '/doctors' },
             { name: 'Book Appointment', path: '/appointments/book' },
             { name: 'My Appointments', path: '/appointments/my' },
-            { name: 'Profile', path: '/profile' },
+            { name: 'Profile', path: '/user-settings' },
         ];
     };
 
