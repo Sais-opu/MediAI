@@ -225,7 +225,7 @@
 
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
+import { AuthContext } from './Auth/AuthProvider.jsx';
 import axios from 'axios';
 import logo from '../assets/logo.png'; 
 
