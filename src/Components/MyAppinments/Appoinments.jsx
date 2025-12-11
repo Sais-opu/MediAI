@@ -967,15 +967,27 @@ export default function Appoinment() {
   };
 
   const handleDeleteSlot = async (slotId) => {
+    console.log("Attempting to delete slot with ID:", slotId);
+    console.log("Current scheduleSlots:", scheduleSlots);
+    
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`${API_BASE_URL}/doctor/schedule/${slotId}`, {
+      const response = await axios.delete(`${API_BASE_URL}/doctor/schedule/${slotId}`, {
         headers,
       });
-      setScheduleSlots((prev) => prev.filter((s) => s._id !== slotId));
+      
+      console.log("Delete response:", response.data);
+      
+      setScheduleSlots((prev) => {
+        const updated = prev.filter((s) => s._id !== slotId);
+        console.log("Updated slots after delete:", updated);
+        return updated;
+      });
+      
       toast.success("Schedule slot deleted successfully");
     } catch (err) {
       console.error("Error deleting schedule:", err);
+      console.error("Error response:", err.response?.data);
       toast.error(
         err.response?.data?.message || "Failed to delete schedule slot"
       );
