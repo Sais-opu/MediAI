@@ -17,15 +17,15 @@ import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
 
 // Doctor features
-import DoctorList from './Components/Doctors/DoctorList.jsx';
-import DoctorProfile from './Components/Doctors/DoctorProfile.jsx';
-import DoctorSchedule from './Components/Doctors/DoctorSchedule.jsx';
+import DoctorList from './Components/DOCTOR/DoctorList.jsx';
+import DoctorProfile from './Components/DOCTOR/DoctorProfile.jsx';
+import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 
-// Patient booking flow
-import BookingScreen from './Components/Booking/BookingScreen.jsx';
+
+import BookingScreen from './Components/booking/BookingScreen.jsx';
+import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
-import InvoicePage from './Components/Payment/InvoicePage.jsx';
-
+//import InvoicePage from './Components/Payment/InvoicePage.jsx';
 
 
 
@@ -82,17 +82,26 @@ const router = createBrowserRouter([
 
       // Patient Booking Flow
       {
-        path: "/book-appointment/:doctorId",
+        path: "/book-appointment",
         element: (
           <Protected>
             <BookingScreen />
           </Protected>
         ),
       },
+      // Simple slot picker page
+      {
+        path: "/book/:doctorId",
+        element: (
+          <Protected>
+            <PatientBooking />
+          </Protected>
+        ),
+      },
 
       // Payment
       {
-        path: "/payment/:appointmentId",
+        path: "/payment/:appointmentId/:amount",
         element: (
           <Protected>
             <PaymentPage />
@@ -100,15 +109,7 @@ const router = createBrowserRouter([
         ),
       },
 
-      // Invoice View/Download
-      {
-        path: "/invoice/:paymentId",
-        element: (
-          <Protected>
-            <InvoicePage />
-          </Protected>
-        ),
-      },
+      
     ]
   },
   // add more routes as needed
