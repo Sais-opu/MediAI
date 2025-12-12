@@ -89,6 +89,14 @@ const Users = () => {
 
     const handleDelete = async (userId) => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
+        
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Please log in to delete users.");
+            navigate("/login");
+            return;
+        }
+
         try {
             await axios.delete(`http://localhost:5000/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -97,7 +105,13 @@ const Users = () => {
             fetchUsers();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to delete user.");
+            const status = err.response?.status;
+            if (status === 401 || status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else {
+                toast.error("Failed to delete user.");
+            }
         }
     };
 
