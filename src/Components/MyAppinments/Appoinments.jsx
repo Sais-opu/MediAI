@@ -112,7 +112,7 @@ function ScheduleForm({ slots, onAddSlot, onDeleteSlot }) {
     day: "Sunday",
     start: "09:00",
     end: "13:00",
-    duration: 30,
+    duration: "30",
   });
 
   const handleChange = (e) => {
