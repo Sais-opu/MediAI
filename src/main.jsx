@@ -15,8 +15,6 @@ import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
-import Appoinments from './Components/MyAppinments/Appoinments.jsx'
-
 
 const router = createBrowserRouter([
   {
