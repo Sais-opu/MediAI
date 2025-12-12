@@ -116,20 +116,70 @@ const Users = () => {
     };
 
     const handleRoleChange = async (userId, newRole) => {
+        // Validate inputs
+        if (!userId) {
+            console.error("handleRoleChange: userId is missing", userId);
+            toast.error("User ID is missing. Cannot change role.");
+            return;
+        }
+        
+        if (!newRole || newRole.trim() === "") {
+            console.error("handleRoleChange: newRole is missing or empty", newRole);
+            toast.error("Role selection is invalid. Cannot change role.");
+            return;
+        }
+
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Please log in to change user roles.");
+            navigate("/login");
+            return;
+        }
+
+        console.log("Changing role - userId:", userId, "newRole:", newRole, "token exists:", !!token);
+
         try {
-            await axios.put(
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            console.log("Request config:", config);
+            
+            const response = await axios.put(
                 `http://localhost:5000/users/role`,
-                { userId, role: newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { userId: String(userId), role: String(newRole) },
+                config
             );
             toast.success(`Role changed to ${newRole}`);
             fetchUsers();
         } catch (err) {
-            console.error(err);
-            toast.error("Failed to change role.");
+            console.error("Role change error:", err);
+            console.error("Error response:", err.response);
+            const status = err.response?.status;
+            const errorMessage = err.response?.data?.message || "Failed to change role.";
+            
+            if (status === 401) {
+                if (errorMessage.includes("No token provided")) {
+                    toast.error("Authentication failed. Please log in again.");
+                    navigate("/login");
+                } else {
+                    toast.error("Session expired or unauthorized. Please log in again.");
+                    navigate("/login");
+                }
+            } else if (status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else if (status === 400) {
+                toast.error(errorMessage);
+            } else {
+                toast.error(errorMessage);
+            }
         }
     };
-
+    
     return (
         <div className="max-w-7xl mx-auto mt-10 p-4 md:p-6">
             <h2 className="text-3xl font-bold mb-5 text-center">Registered Users</h2>
