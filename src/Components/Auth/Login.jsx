@@ -57,7 +57,7 @@
 // export default Login;
 
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -76,7 +76,9 @@ const Login = () => {
             localStorage.setItem("authToken", res.data.token);
 
             toast.success("Login successful!");
-            navigate("/");
+            
+            // Auto refresh session - reload page to refresh all components and redirect to home
+            window.location.href = "/";
         } catch (err) {
             toast.error(err.response?.data?.message || "Invalid email or password");
         }

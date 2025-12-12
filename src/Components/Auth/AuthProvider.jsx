@@ -50,8 +50,13 @@ export const AuthProvider = ({ children }) => {
 
     // LOGOUT
     const logout = () => {
+        // Clear all session data
         localStorage.removeItem("authToken");
+        // Clear any other stored session data if needed
+        sessionStorage.clear();
         setUser(null);
+        // Redirect to home page
+        window.location.href = "/";
     };
 
     return (
