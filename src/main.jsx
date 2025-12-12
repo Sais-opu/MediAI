@@ -51,10 +51,6 @@ const router = createBrowserRouter([
           </Protected>
         ),
       }
-      {
-        path: "/appoinments",
-        element: <Protected><Appoinments /></Protected >,
-      },
     ]
   },
   // add more routes as needed
