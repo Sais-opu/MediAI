@@ -1,23 +1,32 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DoctorCard from "./DoctorCard";
 import axios from "axios";
 
 export default function DoctorList() {
   const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/doctors")
-      .then(res => setDoctors(res.data))
-      .catch(err => console.error("Error loading doctors:", err));
+    (async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/doctors");
+        const data = await res.json();
+        setDoctors(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setDoctors([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
+  if (loading) return <div className="p-4">Loading doctors...</div>;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-      {doctors.length === 0 ? (
-        <p className="text-center text-gray-500">No doctors found.</p>
-      ) : (
-        doctors.map(doc => <DoctorCard key={doc._id} doctor={doc} />)
-      )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {doctors.map((d) => (
+        <DoctorCard key={d._id} doctor={d} />
+      ))}
     </div>
   );
 }

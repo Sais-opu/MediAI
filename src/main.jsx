@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { RouterProvider } from 'react-router-dom'
 
+
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
 import Home from './Components/Home/Home.jsx'
@@ -20,8 +21,6 @@ import UserSettings from './Components/Profiles/usersettings.jsx';
 import DoctorList from './Components/DOCTOR/DoctorList.jsx';
 import DoctorProfile from './Components/DOCTOR/DoctorProfile.jsx';
 import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
-
-
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
