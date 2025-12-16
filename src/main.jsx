@@ -20,13 +20,12 @@ import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
+import DoctorCard from './Components/Find Doctor/DoctorCard.jsx';
 
 // Doctor features
 import DoctorList from './Components/DOCTOR/DoctorList.jsx';
 import DoctorProfile from './Components/DOCTOR/DoctorProfile.jsx';
 import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
-
-
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
@@ -49,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/doctors",
+        element: <DoctorCard />,
       },
       {
         path: "/users",
