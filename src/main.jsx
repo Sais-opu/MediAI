@@ -20,6 +20,8 @@ import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
 
+import DoctorCard from './Components/Doctor/DoctorCard.jsx';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -39,12 +41,24 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
+
+        path: "/doctorCard",
+        element: <DoctorCard />,
+      },
+      {
         path: "/users",
         element: 
           <Protected>
             <Users />
           </Protected >,
       },
+      // {
+      //   path: "/doctorModal",
+      //   element: 
+      //     <Protected>
+      //       <DoctorModal />
+      //     </Protected >,
+      // },
       {
         path: "/user-settings",
         element: (
