@@ -28,7 +28,7 @@ const Users = () => {
         }
 
         try {
-            const res = await axios.get("http://localhost:5000/users", {
+            const res = await axios.get("http://localhost:5001/users", {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -98,7 +98,7 @@ const Users = () => {
         }
 
         try {
-            await axios.delete(`http://localhost:5000/users/${userId}`, {
+            await axios.delete(`http://localhost:5001/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("User deleted successfully!");
@@ -149,7 +149,7 @@ const Users = () => {
             console.log("Request config:", config);
             
             const response = await axios.put(
-                `http://localhost:5000/users/role`,
+                `http://localhost:5001/users/role`,
                 { userId: String(userId), role: String(newRole) },
                 config
             );

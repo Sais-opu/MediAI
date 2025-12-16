@@ -15,7 +15,7 @@ export default function BookingScreen() {
 
   // Load doctors
   useEffect(() => {
-    axios.get("http://localhost:5000/api/doctors")
+    axios.get("http://localhost:5001/api/doctors")
       .then(res => setDoctors(res.data))
       .catch(err => console.error(err));
   }, []);
@@ -23,7 +23,7 @@ export default function BookingScreen() {
   // When doctor is selected → load their slots
   const loadSlots = async (doctorId) => {
     const res = await axios.get(
-      `http://localhost:5000/api/doctor/slots?doctorId=${doctorId}`
+      `http://localhost:5001/api/doctor/slots?doctorId=${doctorId}`
     );
     setSlots(res.data);
   };
@@ -36,7 +36,7 @@ export default function BookingScreen() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/appointments/book",
+        "http://localhost:5001/api/appointments/book",
         {
           doctorId: selectedDoctor._id,
           date: selectedDate,
@@ -45,7 +45,7 @@ export default function BookingScreen() {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
           }
         }
       );
@@ -131,8 +131,8 @@ export default function BookingScreen() {
                       slot.booked
                         ? "btn btn-disabled btn-sm"
                         : selectedSlot?.start === slot.start
-                        ? "btn btn-primary btn-sm"
-                        : "btn btn-outline btn-sm"
+                          ? "btn btn-primary btn-sm"
+                          : "btn btn-outline btn-sm"
                     }
                     onClick={() => !slot.booked && setSelectedSlot(slot)}
                   >
