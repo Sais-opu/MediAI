@@ -276,7 +276,7 @@ const Navbar = () => {
             // without login (guest)
             return [
                 { name: 'Home', path: '/' },
-                { name: 'Doctors', path: '/doctors' },
+                { name: 'Doctors', path: '/doctorCard' },
                 { name: 'Services', path: '/services' },
                 { name: 'About Us', path: '/about' },
                 { name: 'Contact', path: '/contact' },
@@ -305,7 +305,7 @@ const Navbar = () => {
         // users
         return [
             { name: 'Home', path: '/' },
-            { name: 'Find Doctors', path: '/doctors' },
+            { name: 'Find Doctors', path: '/doctorCard' },
             { name: 'Book Appointment', path: '/appointments/book' },
             { name: 'My Appointments', path: '/appointments/my' },
             { name: 'Profile', path: '/user-settings' },
