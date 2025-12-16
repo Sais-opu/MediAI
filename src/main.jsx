@@ -15,7 +15,8 @@ import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
-import DoctorCard from './Components/Find Doctor/DoctorCard.jsx';
+
+import DoctorCard from './Components/Doctor/DoctorCard.jsx';
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
-        path: "/doctors",
+
+        path: "/doctorCard",
         element: <DoctorCard />,
       },
       {
@@ -46,6 +48,13 @@ const router = createBrowserRouter([
             <Users />
           </Protected >,
       },
+      // {
+      //   path: "/doctorModal",
+      //   element: 
+      //     <Protected>
+      //       <DoctorModal />
+      //     </Protected >,
+      // },
       {
         path: "/user-settings",
         element: (
