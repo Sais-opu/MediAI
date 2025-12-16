@@ -57,7 +57,7 @@
 // export default Login;
 
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -70,13 +70,15 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const res = await axios.post("http://localhost:5000/login", { email, password });
+            const res = await axios.post("http://localhost:5001/login", { email, password });
 
             // Save JWT token
             localStorage.setItem("authToken", res.data.token);
 
             toast.success("Login successful!");
-            navigate("/");
+            
+            // Auto refresh session - reload page to refresh all components and redirect to home
+            window.location.href = "/";
         } catch (err) {
             toast.error(err.response?.data?.message || "Invalid email or password");
         }

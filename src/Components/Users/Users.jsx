@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -12,11 +13,20 @@ const Users = () => {
         registrationDate: "",
     });
 
-    const token = localStorage.getItem("authToken");
+    const navigate = useNavigate();
 
     const fetchUsers = async () => {
         setLoading(true);
         setError("");
+
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            setLoading(false);
+            toast.error("Please log in to view users.");
+            navigate("/login");
+            return;
+        }
+
         try {
             const res = await axios.get("http://localhost:5000/users", {
                 headers: { Authorization: `Bearer ${token}` },
@@ -51,7 +61,14 @@ const Users = () => {
             setUsers(filtered);
         } catch (err) {
             console.error(err);
-            setError("Unable to fetch users. Try again later.");
+            const status = err.response?.status;
+            if (status === 401 || status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else {
+                setError("Unable to fetch users. Try again later.");
+                toast.error("Unable to fetch users. Try again later.");
+            }
         } finally {
             setLoading(false);
         }
@@ -72,6 +89,14 @@ const Users = () => {
 
     const handleDelete = async (userId) => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
+        
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Please log in to delete users.");
+            navigate("/login");
+            return;
+        }
+
         try {
             await axios.delete(`http://localhost:5000/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -80,31 +105,87 @@ const Users = () => {
             fetchUsers();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to delete user.");
+            const status = err.response?.status;
+            if (status === 401 || status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else {
+                toast.error("Failed to delete user.");
+            }
         }
     };
 
     const handleRoleChange = async (userId, newRole) => {
+        // Validate inputs
+        if (!userId) {
+            console.error("handleRoleChange: userId is missing", userId);
+            toast.error("User ID is missing. Cannot change role.");
+            return;
+        }
+        
+        if (!newRole || newRole.trim() === "") {
+            console.error("handleRoleChange: newRole is missing or empty", newRole);
+            toast.error("Role selection is invalid. Cannot change role.");
+            return;
+        }
+
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Please log in to change user roles.");
+            navigate("/login");
+            return;
+        }
+
+        console.log("Changing role - userId:", userId, "newRole:", newRole, "token exists:", !!token);
+
         try {
-            await axios.put(
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            console.log("Request config:", config);
+            
+            const response = await axios.put(
                 `http://localhost:5000/users/role`,
-                { userId, role: newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { userId: String(userId), role: String(newRole) },
+                config
             );
             toast.success(`Role changed to ${newRole}`);
             fetchUsers();
         } catch (err) {
-            console.error(err);
-            toast.error("Failed to change role.");
+            console.error("Role change error:", err);
+            console.error("Error response:", err.response);
+            const status = err.response?.status;
+            const errorMessage = err.response?.data?.message || "Failed to change role.";
+            
+            if (status === 401) {
+                if (errorMessage.includes("No token provided")) {
+                    toast.error("Authentication failed. Please log in again.");
+                    navigate("/login");
+                } else {
+                    toast.error("Session expired or unauthorized. Please log in again.");
+                    navigate("/login");
+                }
+            } else if (status === 403) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                navigate("/login");
+            } else if (status === 400) {
+                toast.error(errorMessage);
+            } else {
+                toast.error(errorMessage);
+            }
         }
     };
-
+    
     return (
-        <div className="max-w-6xl mx-auto mt-10 p-5">
+        <div className="max-w-7xl mx-auto mt-10 p-4 md:p-6">
             <h2 className="text-3xl font-bold mb-5 text-center">Registered Users</h2>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <input
                     type="text"
                     name="search"
@@ -127,14 +208,16 @@ const Users = () => {
                 <input
                     type="date"
                     name="registrationDate"
-                    placeholder="Select registration date"
                     className="input input-bordered w-full"
                     value={filters.registrationDate}
                     onChange={handleFilterChange}
                 />
             </div>
 
-            <button onClick={applyFilters} className="btn btn-primary mb-5">
+            <button
+                onClick={applyFilters}
+                className="btn btn-primary mb-5 w-full md:w-auto"
+            >
                 Apply Filters
             </button>
 
@@ -149,7 +232,7 @@ const Users = () => {
                 </p>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="table table-zebra w-full">
+                    <table className="table table-zebra w-full min-w-[600px] md:min-w-full">
                         <thead>
                             <tr className="bg-base-200">
                                 <th>User ID</th>
@@ -163,26 +246,25 @@ const Users = () => {
                         <tbody>
                             {users.map((user) => (
                                 <tr key={user._id}>
-                                    <td>{user._id}</td>
+                                    <td className="break-words">{user._id}</td>
                                     <td>{user.fullName}</td>
                                     <td>{user.email}</td>
                                     <td>{user.userRole}</td>
                                     <td>{new Date(user.registrationDate).toLocaleDateString()}</td>
-                                    <td className="flex gap-2">
+                                    <td className="flex flex-col sm:flex-row gap-2">
                                         <button
                                             onClick={() => handleDelete(user._id)}
-                                            className="btn btn-sm btn-error"
+                                            className="btn btn-sm btn-error w-full sm:w-auto"
                                         >
                                             Delete
                                         </button>
 
-                                        {/* Role Dropdown */}
                                         <select
                                             value={user.userRole}
                                             onChange={(e) =>
                                                 handleRoleChange(user._id, e.target.value)
                                             }
-                                            className="select select-sm select-bordered"
+                                            className="select select-sm select-bordered w-full sm:w-auto"
                                         >
                                             <option value="user">User</option>
                                             <option value="doctor">Doctor</option>
