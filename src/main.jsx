@@ -1,8 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import axios from 'axios'
 import './index.css'
 import App from './App.jsx'
 import { RouterProvider } from 'react-router-dom'
+
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "http://localhost:5001";
+
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
@@ -25,9 +30,7 @@ import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
-//import InvoicePage from './Components/Payment/InvoicePage.jsx';
-
-
+import InvoicePage from './Components/Payment/InvoicePage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -49,7 +52,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: 
+        element:
           <Protected>
             <Users />
           </Protected >,
@@ -61,7 +64,7 @@ const router = createBrowserRouter([
             <UserSettings />
           </Protected>
         ),
-      }, 
+      },
       // Doctor Routes
       {
         path: "/doctors",
@@ -108,8 +111,17 @@ const router = createBrowserRouter([
           </Protected>
         ),
       },
+      // Invoice
+      {
+        path: "/invoice/:paymentId",
+        element: (
+          <Protected>
+            <InvoicePage />
+          </Protected>
+        ),
+      },
 
-      
+
     ]
   },
   // add more routes as needed

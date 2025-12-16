@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function PaymentPage() {
-  const { appointmentId, amount } = useParams();  // <-- FIXED
+  const { appointmentId, amount } = useParams();
+  const navigate = useNavigate();
   const [cardNumber, setCardNumber] = useState("");
 
   const handlePayment = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/payment/charge",
+        "http://localhost:5001/api/payment/charge",
         {
           appointmentId,
           amount,
@@ -18,7 +19,7 @@ export default function PaymentPage() {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
           }
         }
       );
@@ -27,13 +28,14 @@ export default function PaymentPage() {
 
       console.log("Payment ID:", res.data.paymentId);
 
-      // When invoice is implemented:
+      // Navigate to Invoice Page
+      navigate(`/invoice/${res.data.paymentId}`);
       // window.open(`/invoice/${res.data.paymentId}`, "_blank");
 
     } catch (err) {
       toast.error(
         err.response?.data?.error ||
-          "Transaction failed. Please check your card or network."
+        "Transaction failed. Please check your card or network."
       );
     }
   };
