@@ -308,6 +308,7 @@ const Navbar = () => {
             { name: 'Find Doctors', path: '/doctorCard' },
             { name: 'Book Appointment', path: '/appointments/book' },
             { name: 'My Appointments', path: '/appointments/my' },
+            { name: 'Health Tools', path: '/health-tools' },
             { name: 'Profile', path: '/user-settings' },
         ];
     };

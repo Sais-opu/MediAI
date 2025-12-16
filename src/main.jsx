@@ -15,6 +15,10 @@ import { AuthProvider } from './Components/Auth/AuthProvider.jsx';
 import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
+import HealthTools from './Components/HealthTools/HealthTools.jsx';
+import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
+import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
+import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
 
 import DoctorCard from './Components/Doctor/DoctorCard.jsx';
 
@@ -60,6 +64,38 @@ const router = createBrowserRouter([
         element: (
           <Protected>
             <UserSettings />
+          </Protected>
+        ),
+      },
+      {
+        path: "/health-tools",
+        element: (
+          <Protected>
+            <HealthTools />
+          </Protected>
+        ),
+      },
+      {
+        path: "/health-tools/bmi",
+        element: (
+          <Protected>
+            <BMICalculator />
+          </Protected>
+        ),
+      },
+      {
+        path: "/health-tools/water",
+        element: (
+          <Protected>
+            <WaterIntakeTracker />
+          </Protected>
+        ),
+      },
+      {
+        path: "/health-tools/sleep",
+        element: (
+          <Protected>
+            <SleepDurationTracker />
           </Protected>
         ),
       }
