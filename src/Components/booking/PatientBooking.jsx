@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function PatientBooking() {
-  const { doctorId } = useParams();  // <-- FIXED
+  const { doctorId } = useParams();
+  const navigate = useNavigate();
   const [slots, setSlots] = useState([]);
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export default function PatientBooking() {
   const loadSlots = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/doctor/slots?doctorId=${doctorId}`
+        `http://localhost:5001/api/doctor/slots?doctorId=${doctorId}`
       );
       setSlots(res.data);
     } catch (err) {
@@ -25,7 +26,7 @@ export default function PatientBooking() {
   const bookSlot = async (day, slot) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/appointments/book",
+        "http://localhost:5001/api/appointments/book",
         {
           doctorId,
           date: day.date,
@@ -34,13 +35,20 @@ export default function PatientBooking() {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
           }
         }
       );
 
-      toast.success("Appointment booked successfully!");
-      loadSlots();
+      toast.success("Appointment booked successfully! Redirecting to payment...");
+
+      const { appointmentId, fee } = res.data;
+      // Redirect to payment page
+      // Route: /payment/:appointmentId/:amount
+      navigate(`/payment/${appointmentId}/${fee || 0}`);
+
+      // No need to reload slots if we are navigating away
+      // loadSlots();
 
     } catch (error) {
       if (error.response?.status === 409) {
