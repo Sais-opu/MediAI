@@ -70,7 +70,7 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const res = await axios.post("http://localhost:5000/login", { email, password });
+            const res = await axios.post("http://localhost:5001/login", { email, password });
 
             // Save JWT token
             localStorage.setItem("authToken", res.data.token);
