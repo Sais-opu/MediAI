@@ -37,8 +37,6 @@ import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
 import InvoicePage from './Components/Payment/InvoicePage.jsx';
 
-import EmergencyAppointment from './Components/DOCTOR/EmergencyAppointment.jsx';
-
 const router = createBrowserRouter([
   {
     path: "/",

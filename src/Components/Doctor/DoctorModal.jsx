@@ -1,22 +1,10 @@
-import React, { useContext } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../Auth/AuthProvider.jsx";
 
 const DoctorModal = ({ doctor, isOpen, onClose }) => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
-
     if (!doctor) return null;
-
-    const handleEmergency = () => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-        // Navigate to EmergencyAppointment page
-        navigate("/emergency-appointment", { state: { doctorId: doctor._id } });
-    };
 
     return (
         <AnimatePresence>
@@ -99,9 +87,9 @@ const DoctorModal = ({ doctor, isOpen, onClose }) => {
                         <div className="flex flex-col sm:flex-row justify-end gap-4 px-6 pb-6">
                             <button
                                 className="btn btn-error text-white"
-                                onClick={handleEmergency}
+                                onClick={() => alert("Emergency appointment requested!")}
                             >
-                                Emergency Appointment
+                                🚑 Emergency Appointment
                             </button>
 
                             <button
@@ -129,3 +117,4 @@ const DoctorModal = ({ doctor, isOpen, onClose }) => {
 };
 
 export default DoctorModal;
+
