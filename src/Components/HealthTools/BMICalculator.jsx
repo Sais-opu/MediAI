@@ -19,7 +19,7 @@ const BMICalculator = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/bmi/history', {
+      const response = await axios.get('http://localhost:5001/health/bmi/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(response.data);
@@ -41,7 +41,7 @@ const BMICalculator = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/health/bmi',
+        'http://localhost:5001/health/bmi',
         { weight: parseFloat(weight), height: parseFloat(height) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
