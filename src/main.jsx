@@ -16,13 +16,16 @@ import Users from './Components/Users/Users.jsx';
 import Protected from './Components/Auth/ProtectedRoute.jsx'
 import UserSettings from './Components/Profiles/usersettings.jsx';
 import DoctorCard from './Components/Doctor/DoctorCard.jsx';
-// import DoctorModal from './Components/Doctor/DoctorModal.jsx'
+import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
+import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
+import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
+    //Apu part start-------------------------------------------------------------
     children: [
       {
         path: "/",
@@ -47,13 +50,27 @@ const router = createBrowserRouter([
             <Users />
           </Protected >,
       },
-      // {
-      //   path: "/doctorModal",
-      //   element: 
-      //     <Protected>
-      //       <DoctorModal />
-      //     </Protected >,
-      // },
+      {
+        path: "/emergency-appointment",
+        element: 
+          <Protected>
+            <BookEmergencyAppointment />
+          </Protected >,
+      },
+      {
+        path: "/patient-emergencies",
+        element: 
+          <Protected>
+            <PatientEmergencyList />
+          </Protected >,
+      },
+      {
+        path: "/doctor-emergency",
+        element: 
+          <Protected>
+            <DoctorEmergencyList />
+          </Protected >,
+      },
       {
         path: "/user-settings",
         element: (
@@ -62,6 +79,7 @@ const router = createBrowserRouter([
           </Protected>
         ),
       }
+      //Apu part end------------------------------------------------------------------
     ]
   },
   // add more routes as needed
