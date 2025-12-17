@@ -26,7 +26,7 @@ import HealthTools from './Components/HealthTools/HealthTools.jsx';
 import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
-import DoctorCard from './Components/DOCTOR/DoctorCard.jsx';
+import DoctorCard from './Components/DOCTOR/DoctorsCard.jsx';
 
 
 // Doctor features
@@ -116,15 +116,6 @@ const router = createBrowserRouter([
         element: (
           <Protected>
             <DoctorSchedule />
-          </Protected>
-        ),
-      },
-
-      {
-        path: "/emergency-appointment",
-        element: (
-          <Protected> 
-            <EmergencyAppointment />
           </Protected>
         ),
       },

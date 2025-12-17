@@ -24,7 +24,7 @@ const DoctorsCard = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const res = await axios.get("http://localhost:5001/doctors");
+                const res = await axios.get("http://localhost:5000/doctors");
                 setDoctors(res.data);
                 setFilteredDoctors(res.data);
                 setLoading(false);
@@ -247,6 +247,3 @@ const DoctorsCard = () => {
 
 
 export default DoctorsCard;
-
-
-
