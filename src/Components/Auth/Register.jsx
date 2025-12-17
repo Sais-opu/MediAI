@@ -16,7 +16,7 @@ const Register = () => {
         try {
             const userData = { fullName, email, password };
 
-            const res = await axios.post("http://localhost:5001/register", userData);
+            const res = await axios.post("http://localhost:5000/register", userData);
 
             // SUCCESS RESPONSE (HTTP 201)
             if (res.status === 201 && res.data?.userId) {
