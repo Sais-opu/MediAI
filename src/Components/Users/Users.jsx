@@ -108,7 +108,7 @@ const Users = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto mt-10 p-4 md:p-6">
             <div className="flex flex-col items-center mb-8">
                 <UsersIcon className="w-12 h-12 text-primary mb-2" />
-                <h2 className="text-3xl font-bold">User Management</h2>
+                <h2 className="text-3xl font-bold">Activity Log Management</h2>
             </div>
 
             {/* ANIMATED COUNTERS */}
