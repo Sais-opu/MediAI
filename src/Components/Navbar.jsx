@@ -2,23 +2,22 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../Components/Auth/AuthProvider.jsx';
 import axios from 'axios';
-import logo from '../assets/logo.png'; 
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
-    const [userRole, setUserRole] = useState(''); // 'admin' | 'doctor' | 'user' | ''
+    const [userRole, setUserRole] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const token = localStorage.getItem('authToken');
     const location = useLocation();
     const navigate = useNavigate();
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
+    const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
-    // Fetch user role only when logged in
     useEffect(() => {
         const fetchUserRole = async () => {
             if (!user?.email || !token) {
-                setUserRole(''); // Clear on logout
+                setUserRole('');
                 return;
             }
 
@@ -32,12 +31,11 @@ const Navbar = () => {
                 console.error('Error fetching user role:', err);
                 const status = err.response?.status;
                 if (status === 401 || status === 403) {
-                    // Token invalid/expired – force logout and redirect
                     localStorage.removeItem('authToken');
                     logout();
                     navigate('/login');
                 } else {
-                    setUserRole('user'); // fallback
+                    setUserRole('user');
                 }
             }
         };
@@ -45,10 +43,8 @@ const Navbar = () => {
         fetchUserRole();
     }, [user, token, logout, navigate]);
 
-    // Define navigation items based on auth state and role
     const getNavItems = () => {
         if (!user) {
-            // without login (guest)
             return [
                 { name: 'Home', path: '/' },
                 { name: 'Doctors', path: '/doctorCard' },
@@ -73,41 +69,35 @@ const Navbar = () => {
             return [
                 { name: 'Home', path: '/' },
                 { name: 'Patients', path: '/doctor/patients' },
+                { name: 'Emergency Appointment', path: '/doctor-emergency' },
                 { name: 'Reports', path: '/doctor/reports' },
-                { name: 'Profile', path: '/user-settings' }
+                { name: 'Profile', path: '/user-settings' },
             ];
         }
-        // users
+        //Normal User
         return [
             { name: 'Home', path: '/' },
             { name: 'Find Doctors', path: '/doctorCard' },
             { name: 'My Appointments', path: '/appointments/my' },
             { name: 'Health Tools', path: '/health-tools' },
             { name: 'Profile', path: '/user-settings' },
+            { name: 'Emergency Appointment', path: '/patient-emergencies' },
         ];
     };
 
-  const navItems = getNavItems();
+    const navItems = getNavItems();
 
     return (
         <div className="navbar bg-base-100 shadow-md px-4 sticky top-0 z-50">
             {/* Logo */}
             <div className="navbar-start flex items-center">
-                {/* Left side image */}
-                <img
-                    src={logo}
-                    alt="MediAi Logo"
-                    className="w-25 h-25 object-contain"
-                />
-
-                {/* Text */}
+                <img src={logo} alt="MediAi Logo" className="w-25 h-25 object-contain" />
                 <Link to="/" className="btn btn-ghost text-2xl font-bold text-primary">
                     MediAI
                 </Link>
             </div>
 
-
-            {/* Desktop Menu - Center */}
+            {/* Desktop Menu */}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 gap-4">
                     {navItems.map((item) => {
@@ -135,14 +125,10 @@ const Navbar = () => {
                     <>
                         <div className="flex items-center gap-3">
                             <span className="text-sm font-medium">{user.email}</span>
-                            <span className="badge badge-info badge-sm">
-                                {userRole || 'User'}
-                            </span>
+                            <span className="badge badge-info badge-sm">{userRole || 'User'}</span>
                         </div>
                         <button
-                            onClick={() => {
-                                logout();
-                            }}
+                            onClick={() => logout()}
                             className="btn btn-outline btn-error btn-sm"
                         >
                             Logout
@@ -150,10 +136,16 @@ const Navbar = () => {
                     </>
                 ) : (
                     <>
-                        <Link to="/login" className="btn btn-primary btn-sm">
+                        <Link
+                            to="/login"
+                            className={`btn btn-sm ${location.pathname === '/login' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+                        >
                             Login
                         </Link>
-                        <Link to="/register" className="btn btn-ghost btn-sm">
+                        <Link
+                            to="/register"
+                            className={`btn btn-sm ${location.pathname === '/register' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+                        >
                             Register
                         </Link>
                     </>
@@ -162,25 +154,25 @@ const Navbar = () => {
 
             {/* Mobile Hamburger */}
             <div className="lg:hidden navbar-end">
-              <button onClick={toggleMobileMenu} className="btn btn-ghost btn-circle">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                <button onClick={toggleMobileMenu} className="btn btn-ghost btn-circle">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                    </svg>
+                </button>
             </div>
 
-            {/* Mobile Dropdown Menu */}
+            {/* Mobile Dropdown */}
             {isMobileMenuOpen && (
                 <div className="absolute top-full left-0 w-full bg-base-100 shadow-2xl z-50 lg:hidden border-t">
                     <ul className="menu p-4 space-y-2">
@@ -190,9 +182,7 @@ const Navbar = () => {
                                 <li key={item.name}>
                                     <Link
                                         to={item.path}
-                                        className={`text-lg block px-2 py-1 rounded ${isActive
-                                                ? 'bg-blue-500 text-white'
-                                                : ''
+                                        className={`text-lg block px-2 py-1 rounded ${isActive ? 'bg-blue-500 text-white' : ''
                                             }`}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
@@ -202,9 +192,9 @@ const Navbar = () => {
                             );
                         })}
 
-            <div className="divider my-2"></div>
+                        <div className="divider my-2"></div>
 
-                        {/* Mobile Auth Section */}
+                        {/* Mobile Auth */}
                         {user ? (
                             <div className="flex flex-col gap-3 pt-2">
                                 <div className="text-center">
@@ -227,14 +217,16 @@ const Navbar = () => {
                             <div className="flex flex-col gap-3 pt-2">
                                 <Link
                                     to="/login"
-                                    className="btn btn-primary w-full"
+                                    className={`btn w-full ${location.pathname === '/login' ? 'bg-blue-500 text-white' : 'bg-white'
+                                        }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Login
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="btn btn-outline w-full"
+                                    className={`btn w-full ${location.pathname === '/register' ? 'bg-blue-500 text-white' : 'bg-white'
+                                        }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Register

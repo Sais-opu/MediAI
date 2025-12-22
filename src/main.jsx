@@ -22,13 +22,16 @@ import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
 import DoctorCard from './Components/Doctor/DoctorCard.jsx';
-
+import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
+import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
+import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
+    //Apu part start-------------------------------------------------------------
     children: [
       {
         path: "/",
@@ -51,6 +54,27 @@ const router = createBrowserRouter([
         element: 
           <Protected>
             <Users />
+          </Protected >,
+      },
+      {
+        path: "/emergency-appointment",
+        element: 
+          <Protected>
+            <BookEmergencyAppointment />
+          </Protected >,
+      },
+      {
+        path: "/patient-emergencies",
+        element: 
+          <Protected>
+            <PatientEmergencyList />
+          </Protected >,
+      },
+      {
+        path: "/doctor-emergency",
+        element: 
+          <Protected>
+            <DoctorEmergencyList />
           </Protected >,
       },
       {
@@ -93,6 +117,7 @@ const router = createBrowserRouter([
           </Protected>
         ),
       }
+      //Apu part end------------------------------------------------------------------
     ]
   },
   // add more routes as needed
