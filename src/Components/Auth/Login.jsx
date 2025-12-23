@@ -77,7 +77,7 @@ const Login = () => {
                                 </div>
                                 <input
                                     type="email"
-                                    placeholder="doctor@mediai.com"
+                                    placeholder="@gmail.com"
                                     className="input input-bordered w-full pl-10 bg-slate-50 border-slate-200 focus:border-blue-500 focus:bg-white transition-all h-12 rounded-xl"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
