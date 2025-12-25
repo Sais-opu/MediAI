@@ -24,7 +24,7 @@ const DoctorsCard = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const res = await axios.get("http://localhost:5001/api/doctors");
+                const res = await axios.get("http://localhost:5000/doctors");
                 setDoctors(res.data);
                 setFilteredDoctors(res.data);
                 setLoading(false);
@@ -68,7 +68,7 @@ const DoctorsCard = () => {
             console.log("AI Search triggered with query:", query);
 
 
-            const res = await axios.post("http://localhost:5001/api/aisearch", { query });
+            const res = await axios.post("http://localhost:5001/aisearch", { query });
             const specialties = res.data?.specialties || [];
 
 
@@ -247,6 +247,3 @@ const DoctorsCard = () => {
 
 
 export default DoctorsCard;
-
-
-

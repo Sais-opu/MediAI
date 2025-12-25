@@ -1,13 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
+
 import './index.css'
 import App from './App.jsx'
 import axios from 'axios'
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = "http://localhost:5001";
-
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
@@ -26,10 +26,10 @@ import HealthTools from './Components/HealthTools/HealthTools.jsx';
 import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
-import DoctorCard from './Components/Doctor/DoctorCard.jsx';
+import DoctorCard from './Components/DOCTOR/DoctorsCard.jsx';
+
 
 // Doctor features
-import DoctorList from './Components/DOCTOR/DoctorList.jsx';
 import DoctorProfile from './Components/DOCTOR/DoctorProfile.jsx';
 import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
@@ -54,10 +54,6 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
-      },
-      {
-        path: "/doctorCard",
-        element: <DoctorCard />,
       },
       {
         path: "/users",
@@ -108,8 +104,8 @@ const router = createBrowserRouter([
       },
       // Doctor Routes
       {
-        path: "/doctors",
-        element: <DoctorList />,
+        path: "/doctorCard",
+        element: <DoctorCard />,
       },
       {
         path: "/doctor/:id",

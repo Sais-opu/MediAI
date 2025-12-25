@@ -5,8 +5,6 @@ import { Activity, Brain, ShieldCheck, Zap, ArrowRight, CheckCircle2, Search,Bel
 
 import { AuthContext } from '../Auth/AuthProvider'; 
 import Dashboard from '../Dashboard/Dashboard'; 
-import DoctorList from "../DOCTOR/DoctorList.jsx";
-
 
 const Home = () => {
     const { user } = useContext(AuthContext);
