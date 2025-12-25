@@ -218,7 +218,7 @@ const DoctorsCard = () => {
                                         setModalOpen(true);
                                     }}
                                 >
-                                    Book Appointment
+                                    View Details
                                 </button>
                             </div>
                         </div>
