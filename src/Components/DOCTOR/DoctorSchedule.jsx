@@ -48,7 +48,7 @@ export default function DoctorSchedule() {
       await axios.post(
         "http://localhost:5001/doctor/schedule",
         {
-          day: formattedDate,
+          date: formattedDate,
           start,
           end,
           duration
@@ -82,13 +82,13 @@ export default function DoctorSchedule() {
 
   // Filter slots for the selected date
   const selectedDateStr = dayjs(date).format("YYYY-MM-DD");
-  const slotsForDate = schedules.filter(s => s.day === selectedDateStr);
+  const slotsForDate = schedules.filter(s => (s.date || s.day) === selectedDateStr);
 
   // Function to add class to calendar tiles that have slots
   const tileClassName = ({ date, view }) => {
     if (view === 'month') {
       const dateStr = dayjs(date).format("YYYY-MM-DD");
-      if (schedules.some(s => s.day === dateStr)) {
+      if (schedules.some(s => (s.date || s.day) === dateStr)) {
         return 'has-slots'; // Custom class we can style if needed
       }
     }

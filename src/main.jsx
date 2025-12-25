@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import { RouterProvider } from 'react-router-dom'
+import axios from 'axios'
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = "http://localhost:5001";
@@ -27,8 +27,6 @@ import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
 import DoctorCard from './Components/Doctor/DoctorCard.jsx';
-
-import DoctorCard from './Components/Find Doctor/DoctorCard.jsx';
 
 // Doctor features
 import DoctorList from './Components/DOCTOR/DoctorList.jsx';
@@ -107,7 +105,6 @@ const router = createBrowserRouter([
             <SleepDurationTracker />
           </Protected>
         ),
-      }
       },
       // Doctor Routes
       {

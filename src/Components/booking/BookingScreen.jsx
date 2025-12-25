@@ -52,7 +52,7 @@ export default function BookingScreen() {
 
       toast.success("Appointment booked!");
 
-      navigate(`/payment/${res.data.appointmentId}`, {
+      navigate(`/payment/${res.data.appointmentId}/${res.data.fee}`, {
         state: {
           doctor: selectedDoctor,
           slot: selectedSlot,
@@ -100,7 +100,7 @@ export default function BookingScreen() {
             .filter(d => d.specialization === specialization)
             .map(doc => (
               <option key={doc._id} value={doc._id}>
-                {doc.name} (Fee: ৳{doc.fee})
+                {doc.fullName || doc.name} (Fee: ৳{doc.consultationFee || doc.fee || 0})
               </option>
             ))}
         </select>
@@ -129,12 +129,18 @@ export default function BookingScreen() {
                     key={index}
                     className={
                       slot.booked
-                        ? "btn btn-disabled btn-sm"
+                        ? "btn btn-error btn-outline btn-sm opacity-50 cursor-not-allowed"
                         : selectedSlot?.start === slot.start
                           ? "btn btn-primary btn-sm"
                           : "btn btn-outline btn-sm"
                     }
-                    onClick={() => !slot.booked && setSelectedSlot(slot)}
+                    onClick={() => {
+                      if (slot.booked) {
+                        toast.error("You cannot able to book this slot");
+                      } else {
+                        setSelectedSlot(slot);
+                      }
+                    }}
                   >
                     {slot.start} - {slot.end}
                   </button>
