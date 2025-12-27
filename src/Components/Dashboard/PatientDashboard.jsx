@@ -21,7 +21,7 @@ const PatientDashboard = () => {
     const fetchAppointments = async () => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
-        
+
         try {
             // using mock data structure
             const mockUpcoming = [
@@ -62,7 +62,7 @@ const PatientDashboard = () => {
 
             setUpcomingAppointments(mockUpcoming);
             setPastAppointments(mockPast);
-            
+
             // Calculate metrics
             setMetrics({
                 totalConsultations: mockPast.length + mockUpcoming.length,
@@ -166,7 +166,7 @@ const PatientDashboard = () => {
             {/* Upcoming Appointments Section */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Upcoming Appointments</h2>
-                
+
                 {upcomingAppointments.length === 0 ? (
                     <div className="text-center py-12">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,7 +252,7 @@ const PatientDashboard = () => {
             {/* Past Appointments Section */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Past Appointments</h2>
-                
+
                 {pastAppointments.length === 0 ? (
                     <div className="text-center py-12">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
