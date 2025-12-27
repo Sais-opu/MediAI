@@ -202,6 +202,9 @@ const PatientDashboard = () => {
                                                     {appointment.consultationType === 'online' && (
                                                         <span className="badge badge-info">Online Consultation</span>
                                                     )}
+                                                    {appointment.type === 'Emergency' && (
+                                                        <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -284,6 +287,9 @@ const PatientDashboard = () => {
                                                         <span className="badge badge-success">{appointment.paymentStatus}</span>
                                                     </div>
                                                     <span className="badge badge-ghost">Completed</span>
+                                                    {appointment.type === 'Emergency' && (
+                                                        <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
