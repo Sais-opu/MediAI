@@ -103,6 +103,16 @@ const DoctorModal = ({ doctor, isOpen, onClose }) => {
                             </button>
 
                             <button
+                                className="btn btn-info text-white"
+                                onClick={() => {
+                                    navigate(`/doctor/${doctor._id}`);
+                                    onClose();
+                                }}
+                            >
+                                View Full Profile
+                            </button>
+
+                            <button
                                 className="btn btn-outline"
                                 onClick={onClose}
                             >
