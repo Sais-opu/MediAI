@@ -140,24 +140,8 @@ export default function DoctorSchedule() {
                 />
               </div>
 
-              <div className="form-control w-full">
-                <label className="label">
-                  <span className="label-text">Duration (mins)</span>
-                </label>
-                <select
-                  className="select select-bordered"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                >
-                  <option value="15">15 mins</option>
-                  <option value="30">30 mins</option>
-                  <option value="45">45 mins</option>
-                  <option value="60">60 mins</option>
-                </select>
-              </div>
-
               <button className="btn btn-primary mt-4 w-full" onClick={addSlot}>
-                Add Availability
+                Add This Slot
               </button>
             </div>
           </div>
