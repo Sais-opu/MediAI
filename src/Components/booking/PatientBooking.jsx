@@ -66,11 +66,9 @@ export default function PatientBooking() {
       navigate(`/payment/${appointmentId}/${fee || 0}`);
 
     } catch (error) {
-      if (error.response?.status === 409) {
-        toast.error("Slot is already booked.");
-      } else {
-        toast.error("Error booking the appointment. Please try again.");
-      }
+      const message = error.response?.data?.message || "Error booking the appointment. Please try again.";
+      toast.error(message);
+      console.error("Booking error:", error);
     }
   };
 
@@ -181,8 +179,8 @@ export default function PatientBooking() {
                       <button
                         key={i}
                         className={`btn btn-sm ${slot.booked
-                            ? "btn-disabled opacity-30"
-                            : "btn-outline btn-primary hover:bg-primary hover:text-white"
+                          ? "btn-disabled opacity-30"
+                          : "btn-outline btn-primary hover:bg-primary hover:text-white"
                           }`}
                         onClick={() => {
                           if (!slot.booked) bookAppointment(day, slot);
