@@ -6,15 +6,6 @@ const DoctorModal = ({ doctor, isOpen, onClose }) => {
     const navigate = useNavigate();
     if (!doctor) return null;
 
-    const handleEmergency = () => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-        // Navigate to EmergencyAppointment page with full doctor info
-        navigate("/emergency-appointment", { state: { doctor } });
-    };
-
     return (
         <AnimatePresence>
             {isOpen && (
@@ -52,24 +43,42 @@ const DoctorModal = ({ doctor, isOpen, onClose }) => {
 
                             {/* Doctor Info */}
                             <div className="flex-1">
-                                <h2 className="text-3xl font-bold mb-2">{doctor.fullName}</h2>
-                                <p className="text-blue-600 font-semibold text-lg mb-2">{doctor.specialization}</p>
-                                <p className="text-gray-600 mb-2">{doctor.qualifications}</p>
+                                <h2 className="text-3xl font-bold mb-2">
+                                    {doctor.fullName}
+                                </h2>
+
+                                <p className="text-blue-600 font-semibold text-lg mb-2">
+                                    {doctor.specialization}
+                                </p>
+
+                                <p className="text-gray-600 mb-2">
+                                    {doctor.qualifications}
+                                </p>
 
                                 {doctor.experience && (
-                                    <p className="text-gray-500 mb-2">{doctor.experience} yrs experience</p>
+                                    <p className="text-gray-500 mb-2">
+                                        {doctor.experience} yrs experience
+                                    </p>
                                 )}
 
                                 {doctor.email && (
-                                    <p className="text-gray-700 mb-1"><span className="font-semibold">Email:</span> {doctor.email}</p>
+                                    <p className="text-gray-700 mb-1">
+                                        <span className="font-semibold">Email:</span>{" "}
+                                        {doctor.email}
+                                    </p>
                                 )}
 
                                 {doctor.phoneNumber && (
-                                    <p className="text-gray-700 mb-1"><span className="font-semibold">Phone:</span> {doctor.phoneNumber}</p>
+                                    <p className="text-gray-700 mb-1">
+                                        <span className="font-semibold">Phone:</span>{" "}
+                                        {doctor.phoneNumber}
+                                    </p>
                                 )}
 
                                 {doctor.bio && (
-                                    <p className="text-gray-700 mt-3">{doctor.bio}</p>
+                                    <p className="text-gray-700 mt-3">
+                                        {doctor.bio}
+                                    </p>
                                 )}
                             </div>
                         </div>
