@@ -7,22 +7,25 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState("");
 
-    // Load user on page refresh
+    // Load user & token on page refresh
     useEffect(() => {
-        const token = localStorage.getItem("authToken");
+        const storedToken = localStorage.getItem("authToken");
 
-        if (token) {
+        if (storedToken) {
             try {
-                const decoded = jwt_decode.default(token);
+                const decoded = jwt_decode.default(storedToken);
                 setUser({
                     email: decoded.email,
                     role: decoded.userRole || "user",
                     id: decoded.id,
                 });
+                setToken(storedToken); // ✅ store token in state
             } catch (error) {
                 console.error("Invalid token");
                 setUser(null);
+                setToken("");
             }
         }
     }, []);
@@ -34,10 +37,11 @@ export const AuthProvider = ({ children }) => {
             password,
         });
 
-        const token = res.data.token;
-        localStorage.setItem("authToken", token);
+        const authToken = res.data.token;
+        localStorage.setItem("authToken", authToken);
+        setToken(authToken);
 
-        const decoded = jwt_decode.default(token);
+        const decoded = jwt_decode.default(authToken);
 
         setUser({
             email: decoded.email,
@@ -50,17 +54,15 @@ export const AuthProvider = ({ children }) => {
 
     // LOGOUT
     const logout = () => {
-        // Clear all session data
         localStorage.removeItem("authToken");
-        // Clear any other stored session data if needed
         sessionStorage.clear();
         setUser(null);
-        // Redirect to home page
+        setToken("");
         window.location.href = "/";
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, token, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
