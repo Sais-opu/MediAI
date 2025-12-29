@@ -27,11 +27,8 @@ const UserSettings = () => {
         gender: "",
         photoURL: "",
 
-        // Doctor specific fields
-        specialization: "",
-        qualifications: "",
-        experience: "",
-        bio: ""
+        bio: "",
+        consultationFee: ""
     });
 
     // Store original form data to restore on cancel
@@ -45,7 +42,8 @@ const UserSettings = () => {
         specialization: "",
         qualifications: "",
         experience: "",
-        bio: ""
+        bio: "",
+        consultationFee: ""
     });
 
     // --- Profile Picture Upload ---
@@ -126,12 +124,6 @@ const UserSettings = () => {
                     setUserId(userData._id);
                 }
 
-                // Update role from user data
-                if (userData.userRole) {
-                    const userRole = userData.userRole.toLowerCase();
-                    setRole(userRole === 'doctor' ? 'doctor' : 'patient');
-                }
-
                 const initialFormData = {
                     name: userData.fullName || userData.name || "",
                     email: userData.email || user?.email || "",
@@ -142,15 +134,22 @@ const UserSettings = () => {
                     specialization: userData.specialization || "",
                     qualifications: userData.qualifications || "",
                     experience: userData.experience || "",
-                    bio: userData.bio || ""
+                    bio: userData.bio || "",
+                    consultationFee: userData.consultationFee || ""
                 };
-                
+
+                // Update role from user data
+                if (userData.userRole) {
+                    const userRole = userData.userRole.toLowerCase();
+                    setRole(userRole === 'doctor' ? 'doctor' : 'patient');
+                }
+
                 console.log("Initial form data:", initialFormData);
                 console.log("Role from backend:", userData.userRole);
                 console.log("Role state will be set to:", userData.userRole ? (userData.userRole.toLowerCase() === 'doctor' ? 'doctor' : 'patient') : role);
                 setFormData(initialFormData);
                 setOriginalFormData(initialFormData);
-                
+
                 if (userData.photoURL && userData.photoURL !== "default-url") {
                     setProfilePicturePreview(userData.photoURL);
                     setOriginalProfilePicturePreview(userData.photoURL);
@@ -159,7 +158,7 @@ const UserSettings = () => {
                     setProfilePicturePreview(defaultProfilePic);
                     setOriginalProfilePicturePreview(defaultProfilePic);
                 }
-                
+
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -178,14 +177,14 @@ const UserSettings = () => {
         };
 
         fetchUserData();
-    }, [profileId, userId]); 
+    }, [profileId, userId]);
 
     //profile picture file selection
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setProfilePicture(file);
-            setFormData({...formData, photoURL: ""});
+            setFormData({ ...formData, photoURL: "" });
             // preview
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -198,7 +197,7 @@ const UserSettings = () => {
     // Handle URL input change
     const handlePhotoURLChange = (e) => {
         const url = e.target.value;
-        setFormData({...formData, photoURL: url});
+        setFormData({ ...formData, photoURL: url });
         // Clear file selection when URL is entered
         if (url) {
             setProfilePicture(null);
@@ -226,7 +225,7 @@ const UserSettings = () => {
         e?.preventDefault();
         setShowCancelConfirm(false);
         const syntheticEvent = {
-            preventDefault: () => {}
+            preventDefault: () => { }
         };
         await handleProfileUpdate(syntheticEvent);
     };
@@ -246,13 +245,13 @@ const UserSettings = () => {
         try {
             const formDataToSend = new FormData();
             formDataToSend.append('photoURL', 'default-url');
-            
+
             // Also send other current form data to maintain them
             formDataToSend.append('fullName', formData.name || "");
             formDataToSend.append('phone', formData.phone || "");
             formDataToSend.append('dob', formData.dob || "");
             formDataToSend.append('gender', formData.gender || "");
-            
+
             if (role === 'doctor') {
                 formDataToSend.append('specialization', formData.specialization || "");
                 formDataToSend.append('qualifications', formData.qualifications || "");
@@ -267,12 +266,12 @@ const UserSettings = () => {
             });
 
             toast.success("Profile picture removed successfully.");
-            
+
             // Update state to show default image
             setProfilePicturePreview(defaultProfilePic);
             setOriginalProfilePicturePreview(defaultProfilePic);
-            setFormData({...formData, photoURL: "default-url"});
-            setOriginalFormData({...formData, photoURL: "default-url"});
+            setFormData({ ...formData, photoURL: "default-url" });
+            setOriginalFormData({ ...formData, photoURL: "default-url" });
             setProfilePicture(null);
             setShowRemovePicConfirm(false);
         } catch (error) {
@@ -284,7 +283,7 @@ const UserSettings = () => {
     // 2. Handle Profile Update
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
-        
+
         if (!isEditing || !isOwner) {
             return;
         }
@@ -304,19 +303,20 @@ const UserSettings = () => {
 
         try {
             const formDataToSend = new FormData();
-            
+
             // Add text fields
             formDataToSend.append('fullName', formData.name || "");
             formDataToSend.append('phone', formData.phone || "");
             formDataToSend.append('dob', formData.dob || "");
             formDataToSend.append('gender', formData.gender || "");
-            
+
             // Add doctor-specific fields if role is doctor
             if (role === 'doctor') {
                 formDataToSend.append('specialization', formData.specialization || "");
                 formDataToSend.append('qualifications', formData.qualifications || "");
                 formDataToSend.append('experience', formData.experience || "");
                 formDataToSend.append('bio', formData.bio || "");
+                formDataToSend.append('consultationFee', formData.consultationFee || "0");
             }
 
             // Add profile picture if selected
@@ -328,15 +328,15 @@ const UserSettings = () => {
 
             console.log("Sending update request with token:", token ? "Token present" : "No token");
             console.log("User ID:", userId);
-            
+
             const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             toast.success("Profile updated successfully.");
-            
+
             // Update form data with response from server
             if (response.data && response.data.user) {
                 const updatedUserData = response.data.user;
@@ -350,12 +350,13 @@ const UserSettings = () => {
                     specialization: updatedUserData.specialization || "",
                     qualifications: updatedUserData.qualifications || "",
                     experience: updatedUserData.experience || "",
-                    bio: updatedUserData.bio || ""
+                    bio: updatedUserData.bio || "",
+                    consultationFee: updatedUserData.consultationFee || ""
                 };
-                
+
                 setFormData(updatedFormData);
                 setOriginalFormData(updatedFormData);
-                
+
                 if (updatedUserData.photoURL && updatedUserData.photoURL !== "default-url") {
                     setProfilePicturePreview(updatedUserData.photoURL);
                     setOriginalProfilePicturePreview(updatedUserData.photoURL);
@@ -364,14 +365,8 @@ const UserSettings = () => {
                     setProfilePicturePreview(defaultProfilePic);
                     setOriginalProfilePicturePreview(defaultProfilePic);
                 }
-            } else {
-                // Fallback: update with current form data
-                setOriginalFormData(formData);
-                if (profilePicturePreview) {
-                    setOriginalProfilePicturePreview(profilePicturePreview);
-                }
             }
-            
+
             setIsEditing(false);
             setProfilePicture(null);
         } catch (error) {
@@ -380,7 +375,7 @@ const UserSettings = () => {
             } else if (error.message?.includes('profile picture') || error.message?.includes('upload')) {
                 toast.error("Error uploading profile picture.");
             } else {
-            toast.error("Error updating profile.");
+                toast.error("Error updating profile.");
             }
         }
     };
@@ -388,7 +383,7 @@ const UserSettings = () => {
     // 3. Handle Password Change
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        
+
         // Frontend Validation: Check if new passwords match 
         if (passData.newPassword !== passData.confirmNewPassword) {
             toast.error("New passwords do not match.");
@@ -411,7 +406,7 @@ const UserSettings = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            
+
             if (res.data.success) {
                 toast.success("Password updated successfully");
                 setPassData({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
@@ -461,11 +456,11 @@ const UserSettings = () => {
                                 </div>
                                 {isEditing && (
                                     <div className="mt-4 space-y-2">
-                                        <input 
-                                            type="file" 
+                                        <input
+                                            type="file"
                                             ref={fileInputRef}
-                                            accept="image/*" 
-                                            className="hidden" 
+                                            accept="image/*"
+                                            className="hidden"
                                             onChange={handleProfilePictureChange}
                                         />
                                         <button
@@ -508,11 +503,11 @@ const UserSettings = () => {
                                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                                     <div className="flex-1">
                                         {isEditing ? (
-                                            <input 
-                                                type="text" 
-                                                className="input input-bordered w-full text-2xl font-bold mb-2" 
-                                                value={formData.name || ""} 
-                                                onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full text-2xl font-bold mb-2"
+                                                value={formData.name || ""}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 placeholder="Full Name"
                                             />
                                         ) : (
@@ -520,15 +515,15 @@ const UserSettings = () => {
                                                 {formData.name}
                                             </h2>
                                         )}
-                                        
+
                                         {role === 'doctor' && (
                                             <div className="mb-3">
                                                 {isEditing ? (
-                                                    <input 
-                                                        type="text" 
-                                                        className="input input-bordered input-sm w-full max-w-xs" 
-                                                        value={formData.specialization || ""} 
-                                                        onChange={(e) => setFormData({...formData, specialization: e.target.value})} 
+                                                    <input
+                                                        type="text"
+                                                        className="input input-bordered input-sm w-full max-w-xs"
+                                                        value={formData.specialization || ""}
+                                                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                                                         placeholder="Specialization"
                                                     />
                                                 ) : (
@@ -560,11 +555,11 @@ const UserSettings = () => {
                                         {role === 'doctor' && (
                                             <div className="text-sm text-gray-600">
                                                 {isEditing ? (
-                                                    <input 
-                                                        type="number" 
-                                                        className="input input-bordered input-sm w-32" 
-                                                        value={formData.experience || ""} 
-                                                        onChange={(e) => setFormData({...formData, experience: e.target.value})} 
+                                                    <input
+                                                        type="number"
+                                                        className="input input-bordered input-sm w-32"
+                                                        value={formData.experience || ""}
+                                                        onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                                                         placeholder="Years"
                                                     />
                                                 ) : (
@@ -578,7 +573,7 @@ const UserSettings = () => {
                                     {isOwner && (
                                         <div className="flex gap-2">
                                             {!isEditing ? (
-                                                <button 
+                                                <button
                                                     type="button"
                                                     className="btn btn-success text-white"
                                                     onClick={() => setIsEditing(true)}
@@ -587,7 +582,7 @@ const UserSettings = () => {
                                                 </button>
                                             ) : (
                                                 <>
-                                                    <button 
+                                                    <button
                                                         type="button"
                                                         className="btn btn-ghost"
                                                         onClick={() => {
@@ -596,7 +591,7 @@ const UserSettings = () => {
                                                     >
                                                         Cancel
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         type="button"
                                                         className="btn btn-primary"
                                                         onClick={(e) => {
@@ -620,11 +615,11 @@ const UserSettings = () => {
                         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Biography</h3>
                             {isEditing ? (
-                                <textarea 
-                                    className="textarea textarea-bordered w-full h-32 text-gray-800" 
-                                    placeholder="Tell us about your professional background..." 
-                                    value={formData.bio || ""} 
-                                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                                <textarea
+                                    className="textarea textarea-bordered w-full h-32 text-gray-800"
+                                    placeholder="Tell us about your professional background..."
+                                    value={formData.bio || ""}
+                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                 ></textarea>
                             ) : (
                                 <p className="text-gray-700 leading-relaxed">
@@ -646,12 +641,12 @@ const UserSettings = () => {
                                 Qualifications
                             </h3>
                             {isEditing ? (
-                                <input 
-                                    type="text" 
-                                    className="input input-bordered w-full text-gray-800" 
-                                    placeholder="e.g., MBBS, MD, PhD" 
-                                    value={formData.qualifications || ""} 
-                                    onChange={(e) => setFormData({...formData, qualifications: e.target.value})} 
+                                <input
+                                    type="text"
+                                    className="input input-bordered w-full text-gray-800"
+                                    placeholder="e.g., MBBS, MD, PhD"
+                                    value={formData.qualifications || ""}
+                                    onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
                                 />
                             ) : (
                                 <ul className="list-disc list-inside text-gray-700 space-y-2">
@@ -702,10 +697,10 @@ const UserSettings = () => {
                                 <label className="label">
                                     <span className="label-text font-semibold text-gray-700">Email</span>
                                 </label>
-                                <input 
-                                    type="email" 
-                                    className="input input-bordered w-full bg-gray-50 text-gray-800" 
-                                    value={formData.email || user?.email || ""} 
+                                <input
+                                    type="email"
+                                    className="input input-bordered w-full bg-gray-50 text-gray-800"
+                                    value={formData.email || user?.email || ""}
                                     disabled
                                     readOnly
                                 />
@@ -716,12 +711,12 @@ const UserSettings = () => {
                                     <span className="label-text font-semibold text-gray-700">Phone</span>
                                 </label>
                                 {isEditing ? (
-                                    <input 
-                                        type="tel" 
-                                        className="input input-bordered w-full text-gray-800" 
-                                        placeholder="+1 (555) 888-88888" 
-                                        value={formData.phone || ""} 
-                                        onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                                    <input
+                                        type="tel"
+                                        className="input input-bordered w-full text-gray-800"
+                                        placeholder="+1 (555) 888-88888"
+                                        value={formData.phone || ""}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
                                 ) : (
                                     <p className="text-gray-800 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -735,11 +730,11 @@ const UserSettings = () => {
                                     <span className="label-text font-semibold text-gray-700">Date of Birth</span>
                                 </label>
                                 {isEditing ? (
-                                    <input 
-                                        type="date" 
-                                        className="input input-bordered w-full text-gray-800" 
-                                        value={formData.dob ? formData.dob.split('T')[0] : ''} 
-                                        onChange={(e) => setFormData({...formData, dob: e.target.value})} 
+                                    <input
+                                        type="date"
+                                        className="input input-bordered w-full text-gray-800"
+                                        value={formData.dob ? formData.dob.split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
                                     />
                                 ) : (
                                     <p className="text-gray-800 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -753,10 +748,10 @@ const UserSettings = () => {
                                     <span className="label-text font-semibold text-gray-700">Gender</span>
                                 </label>
                                 {isEditing ? (
-                                    <select 
-                                        className="select select-bordered w-full text-gray-800" 
-                                        value={formData.gender || ""} 
-                                        onChange={(e) => setFormData({...formData, gender: e.target.value})} 
+                                    <select
+                                        className="select select-bordered w-full text-gray-800"
+                                        value={formData.gender || ""}
+                                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                     >
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
@@ -777,24 +772,36 @@ const UserSettings = () => {
                                         <label className="label">
                                             <span className="label-text font-semibold text-gray-700">Specialization</span>
                                         </label>
-                                        <input 
-                                            type="text" 
-                                            className="input input-bordered w-full text-gray-800" 
-                                            placeholder="e.g., Cardiology" 
-                                            value={formData.specialization || ""} 
-                                            onChange={(e) => setFormData({...formData, specialization: e.target.value})} 
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full text-gray-800"
+                                            placeholder="e.g., Cardiology"
+                                            value={formData.specialization || ""}
+                                            onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                                         />
                                     </div>
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-semibold text-gray-700">Experience (Years)</span>
                                         </label>
-                                        <input 
-                                            type="number" 
-                                            className="input input-bordered w-full text-gray-800" 
-                                            placeholder="0" 
-                                            value={formData.experience || ""} 
-                                            onChange={(e) => setFormData({...formData, experience: e.target.value})} 
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full text-gray-800"
+                                            placeholder="0"
+                                            value={formData.experience || ""}
+                                            onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700">Consultation Fee (৳)</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full text-gray-800"
+                                            placeholder="500"
+                                            value={formData.consultationFee || ""}
+                                            onChange={(e) => setFormData({ ...formData, consultationFee: e.target.value })}
                                         />
                                     </div>
                                 </>
@@ -827,7 +834,7 @@ const UserSettings = () => {
                         <p className="text-sm text-red-500/70">Update your account password for better security</p>
                     </div>
                     {!showPasswordForm ? (
-                        <button 
+                        <button
                             type="button"
                             className="btn btn-sm md:btn-md btn-error mt-3 sm:mt-0 shadow-md hover:shadow-lg transition-all"
                             onClick={() => setShowPasswordForm(true)}
@@ -838,7 +845,7 @@ const UserSettings = () => {
                             Change Password
                         </button>
                     ) : (
-                        <button 
+                        <button
                             type="button"
                             className="btn btn-sm md:btn-md btn-ghost btn-error mt-3 sm:mt-0"
                             onClick={() => {
@@ -853,48 +860,48 @@ const UserSettings = () => {
                         </button>
                     )}
                 </div>
-                
+
                 {showPasswordForm && (
                     <form onSubmit={handlePasswordChange} className="max-w-md space-y-5 bg-white rounded-lg p-5 border border-red-200">
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text font-semibold text-gray-700">Current Password</span>
                             </label>
-                            <input 
-                                type="password" 
-                                placeholder="Enter your current password" 
-                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20" 
-                                value={passData.currentPassword} 
-                                onChange={(e) => setPassData({...passData, currentPassword: e.target.value})} 
+                            <input
+                                type="password"
+                                placeholder="Enter your current password"
+                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
+                                value={passData.currentPassword}
+                                onChange={(e) => setPassData({ ...passData, currentPassword: e.target.value })}
                             />
                         </div>
-                        
+
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text font-semibold text-gray-700">New Password</span>
                             </label>
-                            <input 
-                                type="password" 
-                                placeholder="Enter your new password" 
-                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20" 
-                                value={passData.newPassword} 
-                                onChange={(e) => setPassData({...passData, newPassword: e.target.value})} 
+                            <input
+                                type="password"
+                                placeholder="Enter your new password"
+                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
+                                value={passData.newPassword}
+                                onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
                             />
                             <label className="label">
                                 <span className="label-text-alt text-gray-400">Must be at least 6 characters</span>
                             </label>
                         </div>
-                        
+
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text font-semibold text-gray-700">Confirm New Password</span>
                             </label>
-                            <input 
-                                type="password" 
-                                placeholder="Confirm your new password" 
-                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20" 
-                                value={passData.confirmNewPassword} 
-                                onChange={(e) => setPassData({...passData, confirmNewPassword: e.target.value})}  
+                            <input
+                                type="password"
+                                placeholder="Confirm your new password"
+                                className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
+                                value={passData.confirmNewPassword}
+                                onChange={(e) => setPassData({ ...passData, confirmNewPassword: e.target.value })}
                             />
                         </div>
 
@@ -905,7 +912,7 @@ const UserSettings = () => {
                                 </svg>
                                 Update Password
                             </button>
-                            <button 
+                            <button
                                 type="button"
                                 className="btn btn-sm md:btn-md btn-ghost btn-error mt-3 sm:mt-0"
                                 onClick={() => {
@@ -932,19 +939,19 @@ const UserSettings = () => {
                             You have unsaved changes. Do you want to save your changes before exiting?
                         </p>
                         <div className="modal-action">
-                            <button 
+                            <button
                                 className="btn btn-ghost"
                                 onClick={() => setShowCancelConfirm(false)}
                             >
                                 Go Back
                             </button>
-                            <button 
+                            <button
                                 className="btn btn-error bg-red-500 hover:bg-red-600 text-white border-none"
                                 onClick={handleCancelConfirm}
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 className="btn btn-primary"
                                 onClick={handleSaveFromModal}
                             >
@@ -965,13 +972,13 @@ const UserSettings = () => {
                             Are you sure you want to remove your profile picture?
                         </p>
                         <div className="modal-action">
-                            <button 
+                            <button
                                 className="btn btn-ghost"
                                 onClick={() => setShowRemovePicConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 className="btn btn-error bg-red-500 hover:bg-red-600 text-white border-none"
                                 onClick={handleRemoveProfilePicture}
                             >
