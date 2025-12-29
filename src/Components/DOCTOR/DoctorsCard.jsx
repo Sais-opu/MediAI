@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import DoctorModal from "./DoctorModal";
+import DoctorModal from "./DoctorPOP-UPModal";
 
 
 const DoctorsCard = () => {
