@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import DoctorModal from "./DoctorModal";
@@ -16,6 +17,7 @@ const DoctorsCard = () => {
     const [aiLoading, setAiLoading] = useState(false);
 
 
+    const navigate = useNavigate();
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -24,7 +26,7 @@ const DoctorsCard = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/doctors");
+                const res = await axios.get("http://localhost:5000/api/doctors");
                 setDoctors(res.data);
                 setFilteredDoctors(res.data);
                 setLoading(false);
@@ -206,20 +208,31 @@ const DoctorsCard = () => {
                                 <h3 className="text-xl font-semibold">{doctor.fullName}</h3>
                                 <p className="text-blue-600 font-medium">{doctor.specialization}</p>
                                 <p className="text-sm text-gray-600">{doctor.qualifications}</p>
-                                {doctor.experience && (
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {doctor.experience} yrs experience
-                                    </p>
-                                )}
-                                <button
-                                    className="btn btn-primary mt-auto"
-                                    onClick={() => {
-                                        setSelectedDoctor(doctor);
-                                        setModalOpen(true);
-                                    }}
-                                >
-                                    View Details
-                                </button>
+                                <p className="text-sm text-gray-800 font-bold mt-1">
+                                    Fee: ৳{doctor.consultationFee || 0}
+                                </p>
+                                <p className="text-sm text-yellow-500 font-medium mt-1">
+                                    ⭐ {(doctor.ratingAvg || 4.5).toString()} ({doctor.ratingCount || 10} reviews)
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                                    <button
+                                        className="btn btn-primary flex-1"
+                                        onClick={() => {
+                                            navigate(`/doctor/${doctor._id}`);
+                                        }}
+                                    >
+                                        View Profile
+                                    </button>
+                                    <button
+                                        className="btn btn-outline flex-1"
+                                        onClick={() => {
+                                            setSelectedDoctor(doctor);
+                                            setModalOpen(true);
+                                        }}
+                                    >
+                                        Quick View
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))
@@ -247,6 +260,3 @@ const DoctorsCard = () => {
 
 
 export default DoctorsCard;
-
-
-

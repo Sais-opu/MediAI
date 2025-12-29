@@ -26,6 +26,7 @@ const PatientDashboard = () => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
 
+
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
