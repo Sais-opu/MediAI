@@ -31,7 +31,7 @@ const Users = () => {
         }
 
         try {
-            const res = await axios.get("http://localhost:5001/users", {
+            const res = await axios.get("http://localhost:5000/users", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setAllUsers(res.data);
@@ -79,7 +79,7 @@ const Users = () => {
         if (!window.confirm("Delete this user?")) return;
         const token = localStorage.getItem("authToken");
         try {
-            await axios.delete(`http://localhost:5001/users/${userId}`, {
+            await axios.delete(`http://localhost:5000/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("User removed");

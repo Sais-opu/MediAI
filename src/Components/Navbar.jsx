@@ -23,7 +23,7 @@ const Navbar = () => {
 
             try {
                 const res = await axios.get(
-                    `http://localhost:5001/users/role?email=${user.email}`,
+                    `http://localhost:5000/users/role?email=${user.email}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setUserRole(res.data.role || 'user');

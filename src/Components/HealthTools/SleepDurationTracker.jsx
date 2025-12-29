@@ -21,7 +21,7 @@ const SleepDurationTracker = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/health/sleep/history', {
+      const response = await axios.get('http://localhost:5000/health/sleep/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(response.data);
@@ -34,7 +34,7 @@ const SleepDurationTracker = () => {
 
   const fetchWeeklySummary = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/health/sleep/weekly', {
+      const response = await axios.get('http://localhost:5000/health/sleep/weekly', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWeeklySummary(response.data);
@@ -54,7 +54,7 @@ const SleepDurationTracker = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5001/health/sleep',
+        'http://localhost:5000/health/sleep',
         { bedtime, wakeTime, quality },
         { headers: { Authorization: `Bearer ${token}` } }
       );
