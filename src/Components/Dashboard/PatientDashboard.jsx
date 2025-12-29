@@ -2,12 +2,16 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
+import PatientConsultation from "../Consultation/PatientConsultation";
 
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
     const [upcomingAppointments, setUpcomingAppointments] = useState([]);
     const [pastAppointments, setPastAppointments] = useState([]);
+    const [consultationHistory, setConsultationHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showConsultation, setShowConsultation] = useState(false);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
     const [metrics, setMetrics] = useState({
         totalConsultations: 0,
         bookedConsultations: 0,
@@ -15,68 +19,31 @@ const PatientDashboard = () => {
     });
 
     useEffect(() => {
-        fetchAppointments();
+        fetchDashboardData();
     }, []);
 
-    const fetchAppointments = async () => {
+    const fetchDashboardData = async () => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
 
+
         try {
-            // using mock data structure
-            const mockUpcoming = [
-                {
-                    id: "1",
-                    doctorName: "Dr. Sarah Williams",
-                    specialization: "Cardiologist",
-                    appointmentDate: "2025-01-15",
-                    appointmentTime: "10:00 AM",
-                    paymentStatus: "Paid",
-                    consultationType: "online",
-                    status: "upcoming"
-                },
-                {
-                    id: "2",
-                    doctorName: "Dr. John Smith",
-                    specialization: "Neurologist",
-                    appointmentDate: "2025-01-16",
-                    appointmentTime: "2:00 PM",
-                    paymentStatus: "Pending",
-                    consultationType: "in-person",
-                    status: "upcoming"
-                }
-            ];
+            const headers = { Authorization: `Bearer ${token}` };
+            const response = await axios.get(
+                "http://localhost:5000/patient/dashboard",
+                { headers }
+            );
 
-            const mockPast = [
-                {
-                    id: "3",
-                    doctorName: "Dr. Emily Johnson",
-                    specialization: "Dermatologist",
-                    appointmentDate: "2024-12-20",
-                    appointmentTime: "11:00 AM",
-                    paymentStatus: "Paid",
-                    consultationType: "online",
-                    status: "completed"
-                }
-            ];
+            const { metrics, upcomingAppointments, pastAppointments, history } = response.data;
 
-            setUpcomingAppointments(mockUpcoming);
-            setPastAppointments(mockPast);
+            setMetrics(metrics);
+            setUpcomingAppointments(upcomingAppointments);
+            setPastAppointments(pastAppointments);
+            setConsultationHistory(history || []);
 
-            // Calculate metrics
-            setMetrics({
-                totalConsultations: mockPast.length + mockUpcoming.length,
-                bookedConsultations: mockUpcoming.length,
-                upcomingThisWeek: mockUpcoming.filter(apt => {
-                    const aptDate = new Date(apt.appointmentDate);
-                    const today = new Date();
-                    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-                    return aptDate >= today && aptDate <= weekFromNow;
-                }).length
-            });
         } catch (error) {
-            console.error("Error fetching appointments:", error);
-            toast.error("Failed to load appointments");
+            console.error("Error fetching dashboard data:", error);
+            toast.error("Failed to load dashboard data");
         } finally {
             setLoading(false);
         }
@@ -96,8 +63,37 @@ const PatientDashboard = () => {
         }
     };
 
-    const handleJoinConsultation = (appointmentId) => {
-        toast.info("Join Consultation functionality coming soon");
+
+    const handleJoinConsultation = async (appointmentId) => {
+        // Check if it's consultation time
+        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        if (!appointment) return;
+
+        if (appointment.status === "Cancelled") {
+            toast.error("This appointment has been cancelled");
+            return;
+        }
+
+        if (appointment.consultationType !== "online" && appointment.consultationType !== "telemedicine") {
+            toast.error("This is not an online consultation");
+            return;
+        }
+
+        // Check if it's consultation time (allow 15 minutes before)
+        const now = new Date();
+        const appointmentDate = new Date(appointment.appointmentDate);
+        const [hours, minutes] = appointment.appointmentTime.replace(" AM", "").replace(" PM", "").split(':');
+        const isPM = appointment.appointmentTime.includes("PM");
+        appointmentDate.setHours(parseInt(hours) + (isPM && hours !== "12" ? 12 : 0), parseInt(minutes), 0, 0);
+        const fifteenMinutesBefore = new Date(appointmentDate.getTime() - 15 * 60 * 1000);
+
+        if (now < fifteenMinutesBefore) {
+            toast.error("Not consultation time yet. Please join 15 minutes before the scheduled time.");
+            return;
+        }
+
+        setSelectedAppointmentId(appointmentId);
+        setShowConsultation(true);
     };
 
     if (loading) {
@@ -204,15 +200,18 @@ const PatientDashboard = () => {
                                                             {appointment.paymentStatus}
                                                         </span>
                                                     </div>
-                                                    {appointment.consultationType === 'online' && (
+                                                    {(appointment.consultationType === 'online' || appointment.consultationType === 'telemedicine') && (
                                                         <span className="badge badge-info">Online Consultation</span>
+                                                    )}
+                                                    {appointment.type === 'Emergency' && (
+                                                        <span className="badge badge-error text-white animate-pulse">Emergency</span>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {appointment.consultationType === 'online' && (
+                                        {(appointment.consultationType === 'online' || appointment.consultationType === 'telemedicine') && (
                                             <button
                                                 onClick={() => handleJoinConsultation(appointment.id)}
                                                 className="btn btn-primary btn-sm"
@@ -289,6 +288,9 @@ const PatientDashboard = () => {
                                                         <span className="badge badge-success">{appointment.paymentStatus}</span>
                                                     </div>
                                                     <span className="badge badge-ghost">Completed</span>
+                                                    {appointment.type === 'Emergency' && (
+                                                        <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -307,6 +309,80 @@ const PatientDashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Telemedicine History Section */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Telemedicine History</h2>
+
+                {consultationHistory.length === 0 ? (
+                    <div className="text-center py-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-gray-600 text-lg">No telemedicine consultations yet</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {consultationHistory.map((consultation) => (
+                            <div key={consultation.consultationId} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                                            {consultation.doctorName}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 mb-2">{consultation.doctorSpecialization}</p>
+                                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                            <div className="flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>{consultation.appointmentDate ? new Date(consultation.appointmentDate).toLocaleDateString() : "N/A"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span>{consultation.appointmentTime}</span>
+                                            </div>
+                                            {consultation.rating && (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-yellow-400">★</span>
+                                                    <span>{consultation.rating}/5</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {consultation.hasPrescription && (
+                                            <button
+                                                onClick={() => {
+                                                    // Open prescription view
+                                                    toast.info("Prescription view coming soon");
+                                                }}
+                                                className="btn btn-outline btn-sm"
+                                            >
+                                                View Prescription
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Consultation Modal */}
+            {showConsultation && selectedAppointmentId && (
+                <PatientConsultation
+                    appointmentId={selectedAppointmentId}
+                    onClose={() => {
+                        setShowConsultation(false);
+                        setSelectedAppointmentId(null);
+                        fetchConsultationHistory(); // Refresh history after consultation
+                    }}
+                />
+            )}
         </div>
     );
 };
