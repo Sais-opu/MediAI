@@ -449,8 +449,9 @@ const BookEmergencyAppointment = () => {
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            toast.success("Emergency appointment requested successfully!");
-            navigate("/patient-emergencies");
+            toast.success("Emergency appointment requested successfully! Redirecting to payment...");
+            const { emergencyId, fee } = res.data;
+            navigate(`/payment/${emergencyId}/${fee || 1500}?type=emergency`);
         } catch (err) {
             console.error(err);
             toast.error("Failed to book emergency appointment");
@@ -591,8 +592,8 @@ const BookEmergencyAppointment = () => {
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => setSelectedSchedule(s)}
                                         className={`cursor-pointer p-4 rounded-2xl border-2 transition-all duration-200 relative ${selectedSchedule?._id === s._id
-                                                ? "border-blue-500 bg-blue-50/50 shadow-md ring-1 ring-blue-500"
-                                                : "border-slate-100 hover:border-blue-200 bg-slate-50/50"
+                                            ? "border-blue-500 bg-blue-50/50 shadow-md ring-1 ring-blue-500"
+                                            : "border-slate-100 hover:border-blue-200 bg-slate-50/50"
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
@@ -639,22 +640,11 @@ const BookEmergencyAppointment = () => {
                     <motion.button
                         whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -5px rgba(34,197,94,0.4)" }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => toast.info("Payment gateway not implemented yet")}
-                        className="w-full py-4 mt-4 rounded-2xl font-black text-xl tracking-wide uppercase flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                    >
-                        <Activity size={24} />
-                        Pay for Appointment
-                    </motion.button>
-
-                    {/* Submit Button */}
-                    <motion.button
-                        whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(220, 38, 38, 0.4)" }}
-                        whileTap={{ scale: 0.98 }}
                         onClick={handleEmergency}
                         disabled={loading}
-                        className={`w-full py-4 rounded-2xl font-black text-xl tracking-wide uppercase transition-all flex items-center justify-center gap-3 ${loading
-                                ? "bg-slate-300 cursor-not-allowed text-slate-500"
-                                : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-xl shadow-red-200"
+                        className={`w-full py-4 mt-4 rounded-2xl font-black text-xl tracking-wide uppercase transition-all flex items-center justify-center gap-3 ${loading
+                            ? "bg-slate-300 cursor-not-allowed text-slate-500"
+                            : "bg-green-600 hover:bg-green-700 text-white shadow-lg"
                             }`}
                     >
                         {loading ? (
@@ -668,7 +658,7 @@ const BookEmergencyAppointment = () => {
                         ) : (
                             <>
                                 <Activity size={24} />
-                                Confirm Emergency Booking
+                                Pay & Confirm Emergency Booking
                             </>
                         )}
                     </motion.button>

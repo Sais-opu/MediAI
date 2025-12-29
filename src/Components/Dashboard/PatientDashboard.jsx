@@ -26,6 +26,7 @@ const PatientDashboard = () => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
 
+
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
@@ -73,7 +74,7 @@ const PatientDashboard = () => {
             return;
         }
 
-        if (appointment.consultationType !== "online") {
+        if (appointment.consultationType !== "online" && appointment.consultationType !== "telemedicine") {
             toast.error("This is not an online consultation");
             return;
         }
@@ -199,7 +200,7 @@ const PatientDashboard = () => {
                                                             {appointment.paymentStatus}
                                                         </span>
                                                     </div>
-                                                    {appointment.consultationType === 'online' && (
+                                                    {(appointment.consultationType === 'online' || appointment.consultationType === 'telemedicine') && (
                                                         <span className="badge badge-info">Online Consultation</span>
                                                     )}
                                                     {appointment.type === 'Emergency' && (
@@ -210,7 +211,7 @@ const PatientDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {appointment.consultationType === 'online' && (
+                                        {(appointment.consultationType === 'online' || appointment.consultationType === 'telemedicine') && (
                                             <button
                                                 onClick={() => handleJoinConsultation(appointment.id)}
                                                 className="btn btn-primary btn-sm"
