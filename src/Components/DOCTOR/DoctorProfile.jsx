@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../Auth/AuthProvider.jsx";
 
 export default function DoctorProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`http://localhost:5001/api/doctors/${id}`)
+      .get(`http://localhost:5000/api/doctors/${id}`)
       .then((res) => setDoctor(res.data))
       .catch((err) => console.error("Error loading doctor:", err))
       .finally(() => setLoading(false));
@@ -77,7 +80,18 @@ export default function DoctorProfile() {
       ) : null}
 
       <div className="flex gap-3 pt-2">
-        <button className="btn btn-success">Book Appointment</button>
+        <button
+          className="btn btn-success"
+          onClick={() => {
+            if (!user) {
+              navigate("/login");
+              return;
+            }
+            navigate(`/book/${doctor._id}`);
+          }}
+        >
+          Book Appointment
+        </button>
         <Link to="/doctors" className="btn btn-ghost">
           Back to Find Your Doctor
         </Link>
