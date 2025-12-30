@@ -4,8 +4,8 @@
 
 
 
-### Hero Image
-![MediAI Hero Image](https://via.placeholder.com/1200x600?text=MediAI+-+Healthcare+Management+System)  
+
+![MediAI Hero Image](https://i.ibb.co.com/JFFfKCf4/Home-Page.png)  
 *MediAI - Healthcare Management System Hero Banner*
 
 ### Live Demo / Deployment Link
