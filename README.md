@@ -11,6 +11,9 @@
 ### Live Demo / Deployment Link
 **[Live Demo - MediAI](https://mediai-yourproject.vercel.app)**  
 *(Link will be updated once the project is fully deployed on Vercel/Render)*
+
+
+
 **Project Title:** MediAI  
 
 **Project Description:** MediAI is an innovative, AI-centric healthcare management platform built on the MERN stack (MongoDB, Express.js, React.js, Node.js). It revolutionizes patient-doctor interactions by placing artificial intelligence at the core of doctor discovery, personalized recommendations, and intelligent system assistance, making healthcare more accessible, intuitive, and efficient.
