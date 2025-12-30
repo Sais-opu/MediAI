@@ -2,9 +2,42 @@
 
 MediAI is a comprehensive healthcare management system built using the MERN stack. It focuses on secure authentication, admin activity monitoring, AI-powered doctor recommendations, and efficient emergency appointment handling. The frontend is powered by React with Vite for fast development and hot module replacement (HMR).
 
-## Contributor
-**MD Saidul Islam Apu**  
-Project member
+## Live Demo
+**[Deploy Link](#)** *(To be updated once deployed on Vercel/Render)*
+
+## Team Members
+
+### MD Saidul Islam Apu
+**Role & Contributions:**  
+- Project Lead & Full-Stack Developer  
+- Designed and implemented core authentication system (JWT + Google OAuth)  
+- Built role-based access control and secure password management  
+- Integrated admin activity logging and history tracking module  
+- Set up backend structure with Express.js, MongoDB, and Prisma
+
+### Khalid Abrar Labib
+**Role & Contributions:**  
+- Frontend Developer & UI/UX Designer  
+- Implemented responsive UI using React, Tailwind CSS, and Daisy UI  
+- Developed real-time doctor search functionality with instant suggestions  
+- Created dynamic doctor profile cards and grid layouts  
+- Handled frontend state management and routing
+
+### Maliha Rahman
+**Role & Contributions:**  
+- AI Integration & Backend Specialist  
+- Integrated Google Gemini API for AI-powered doctor finder  
+- Developed natural language processing logic for medical query mapping  
+- Built emergency appointment system with real-time alerts  
+- Implemented Socket.io/WebSocket for live notifications
+
+### Owara Binte Mamun
+**Role & Contributions:**  
+- Database & Backend Developer  
+- Designed MongoDB schema for users, doctors, appointments, and activity logs  
+- Implemented secure data validation and error handling  
+- Developed admin dashboard for log filtering and visualization  
+- Managed deployment configuration for Vercel/Render
 
 ## Tech Stack
 - **Language / Stack:** MERN (MongoDB, Express.js, React.js, Node.js)
