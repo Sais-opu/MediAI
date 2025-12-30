@@ -6,7 +6,7 @@
 
 
 ![MediAI Hero Image](https://i.ibb.co.com/JFFfKCf4/Home-Page.png)  
-*MediAI - Healthcare Management System Hero Banner*
+*MediAI - Healthcare Management System Home page*
 
 ### Live Demo / Deployment Link
 **[Live Demo - MediAI](https://mediai-yourproject.vercel.app)**  
