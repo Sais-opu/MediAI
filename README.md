@@ -6,13 +6,13 @@
 
 
 ![MediAI Hero Image](https://i.ibb.co.com/JFFfKCf4/Home-Page.png)  
-*MediAI - Healthcare Management System Home page*
 
 
 
 
 
-###Project Title:** MediAI  
+
+### MediAI - Project Description  
 
 **Project Description:** MediAI is an innovative, AI-centric healthcare management platform built on the MERN stack (MongoDB, Express.js, React.js, Node.js). It revolutionizes patient-doctor interactions by placing artificial intelligence at the core of doctor discovery, personalized recommendations, and intelligent system assistance, making healthcare more accessible, intuitive, and efficient.
 
