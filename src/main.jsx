@@ -35,9 +35,11 @@ import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
-import InvoicePage from './Components/Payment/InvoicePage.jsx';import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
+import InvoicePage from './Components/Payment/InvoicePage.jsx';
+import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
+import MyAppointments from './Components/Dashboard/MyAppointments.jsx';
 
 const router = createBrowserRouter([
   {
@@ -67,21 +69,21 @@ const router = createBrowserRouter([
       },
       {
         path: "/emergency-appointment",
-        element: 
+        element:
           <Protected>
             <BookEmergencyAppointment />
           </Protected >,
       },
       {
         path: "/patient-emergencies",
-        element: 
+        element:
           <Protected>
             <PatientEmergencyList />
           </Protected >,
       },
       {
         path: "/doctor-emergency",
-        element: 
+        element:
           <Protected>
             <DoctorEmergencyList />
           </Protected >,
@@ -161,6 +163,14 @@ const router = createBrowserRouter([
         element: (
           <Protected>
             <PatientBooking />
+          </Protected>
+        ),
+      },
+      {
+        path: "/appointments/my",
+        element: (
+          <Protected>
+            <MyAppointments />
           </Protected>
         ),
       },
