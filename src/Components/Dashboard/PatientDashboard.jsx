@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import PatientConsultation from "../Consultation/PatientConsultation";
 import ConfirmationModal from "../Shared/ConfirmationModal";
+import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
 
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -18,10 +19,14 @@ const PatientDashboard = () => {
         upcomingThisWeek: 0
     });
 
-    // Modal State
+    // Modal State - Cancellation
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [appointmentToCancel, setAppointmentToCancel] = useState(null);
     const [isCancelling, setIsCancelling] = useState(false);
+
+    // Modal State - View Details
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedAppointmentDetails, setSelectedAppointmentDetails] = useState(null);
 
     useEffect(() => {
         fetchDashboardData();
@@ -30,7 +35,6 @@ const PatientDashboard = () => {
     const fetchDashboardData = async () => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
-
 
         try {
             const headers = { Authorization: `Bearer ${token}` };
@@ -53,8 +57,9 @@ const PatientDashboard = () => {
         }
     };
 
-    const handleViewDetails = (appointmentId) => {
-        toast.info("View Details functionality coming soon");
+    const handleViewDetails = (appointment) => {
+        setSelectedAppointmentDetails(appointment);
+        setIsDetailsModalOpen(true);
     };
 
     const handleReschedule = (appointmentId) => {
@@ -254,7 +259,7 @@ const PatientDashboard = () => {
                                             </button>
                                         )}
                                         <button
-                                            onClick={() => handleViewDetails(appointment.id)}
+                                            onClick={() => handleViewDetails(appointment)}
                                             className="btn btn-outline btn-sm"
                                         >
                                             View Details
@@ -302,6 +307,16 @@ const PatientDashboard = () => {
                 title="Cancel Appointment"
                 message="Are you sure you want to cancel this appointment? This action cannot be undone and the slot will be made available to other patients."
                 isLoading={isCancelling}
+            />
+
+            {/* Appointment Details Modal */}
+            <AppointmentDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => {
+                    setIsDetailsModalOpen(false);
+                    setSelectedAppointmentDetails(null);
+                }}
+                appointment={selectedAppointmentDetails}
             />
         </div>
     );
