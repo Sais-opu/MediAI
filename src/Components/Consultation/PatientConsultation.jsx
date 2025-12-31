@@ -75,8 +75,8 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
 
         // Test connection
         try {
-            const response = await fetch("http://localhost:5000/test-cors");
-            results.connection = response.ok;
+            const response = await axios.get("/test-cors");
+            results.connection = response.status === 200;
         } catch (error) {
             console.error("Connection test failed:", error);
             results.connection = false;
@@ -111,7 +111,7 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
 
             // Generate consultation token
             const response = await axios.post(
-                "http://localhost:5000/consultation/generate-token",
+                "/consultation/generate-token",
                 { appointmentId },
                 { headers }
             );
@@ -175,7 +175,7 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
             if (consultationData?.consultationId) {
                 const headers = { Authorization: `Bearer ${token}` };
                 const response = await axios.get(
-                    `http://localhost:5000/consultation/${consultationData.consultationId}/prescription`,
+                    `/consultation/${consultationData.consultationId}/prescription`,
                     { headers }
                 );
                 setPrescription(response.data);
@@ -223,7 +223,7 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
 
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/rating`,
+                `/consultation/${consultationData.consultationId}/rating`,
                 { rating, comment: ratingComment },
                 { headers }
             );
