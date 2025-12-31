@@ -3,6 +3,7 @@ import { AuthContext } from "../Auth/AuthProvider.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
 import PatientConsultation from "../Consultation/PatientConsultation";
+import ConfirmationModal from "../Shared/ConfirmationModal";
 
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -16,6 +17,11 @@ const PatientDashboard = () => {
         bookedConsultations: 0,
         upcomingThisWeek: 0
     });
+
+    // Modal State
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+    const [isCancelling, setIsCancelling] = useState(false);
 
     useEffect(() => {
         fetchDashboardData();
@@ -55,9 +61,36 @@ const PatientDashboard = () => {
         toast.info("Reschedule functionality coming soon");
     };
 
-    const handleCancel = (appointmentId) => {
-        if (window.confirm("Are you sure you want to cancel this appointment?")) {
-            toast.info("Cancel appointment functionality coming soon");
+    const initiateCancel = (appointment) => {
+        setAppointmentToCancel(appointment);
+        setIsCancelModalOpen(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!appointmentToCancel) return;
+
+        setIsCancelling(true);
+        const token = localStorage.getItem("authToken");
+
+        try {
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.patch(
+                `http://localhost:5000/api/cancel-appointment/${appointmentToCancel.id}`,
+                { type: appointmentToCancel.type }, // Pass type (Emergency/Regular)
+                { headers }
+            );
+
+            toast.success("Appointment cancelled successfully");
+            setIsCancelModalOpen(false);
+            setAppointmentToCancel(null);
+            fetchDashboardData(); // Refresh list
+
+        } catch (error) {
+            console.error("Error cancelling appointment:", error);
+            const msg = error.response?.data?.message || "Failed to cancel appointment";
+            toast.error(msg);
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -233,7 +266,7 @@ const PatientDashboard = () => {
                                             Reschedule
                                         </button>
                                         <button
-                                            onClick={() => handleCancel(appointment.id)}
+                                            onClick={() => initiateCancel(appointment)}
                                             className="btn btn-error btn-sm"
                                         >
                                             Cancel
@@ -257,6 +290,19 @@ const PatientDashboard = () => {
                     }}
                 />
             )}
+
+            {/* Cancel Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => {
+                    setIsCancelModalOpen(false);
+                    setAppointmentToCancel(null);
+                }}
+                onConfirm={handleConfirmCancel}
+                title="Cancel Appointment"
+                message="Are you sure you want to cancel this appointment? This action cannot be undone and the slot will be made available to other patients."
+                isLoading={isCancelling}
+            />
         </div>
     );
 };
