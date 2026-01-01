@@ -384,7 +384,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
             if (consultationData?.consultationId) {
                 console.log("Sending end request for ID:", consultationData.consultationId);
                 await axios.post(
-                    `/consultation/${consultationData.consultationId}/end`,
+                    `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/consultation/${consultationData.consultationId}/end`,
                     { outcome },
                     { headers }
                 );
