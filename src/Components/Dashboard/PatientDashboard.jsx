@@ -299,6 +299,9 @@ const PatientDashboard = () => {
                                                     {appointment.type === 'Emergency' && (
                                                         <span className="badge badge-error text-white animate-pulse">Emergency</span>
                                                     )}
+                                                    {appointment.type === 'Emergency' && appointment.status?.toLowerCase() === 'accepted' && (
+                                                        <span className="badge badge-success">Accepted</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -396,6 +399,9 @@ const PatientDashboard = () => {
                                                         )}
                                                     {appointment.type === 'Emergency' && (
                                                         <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
+                                                    {appointment.type === 'Emergency' && appointment.status?.toLowerCase() === 'accepted' && (
+                                                        <span className="badge badge-success">Accepted</span>
                                                     )}
                                                     {appointment.isParticipantOnline && (
                                                         <span className="badge badge-success animate-pulse flex items-center gap-1">
