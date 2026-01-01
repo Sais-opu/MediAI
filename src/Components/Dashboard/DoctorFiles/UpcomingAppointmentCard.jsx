@@ -27,6 +27,12 @@ const UpcomingAppointmentCard = ({ appt, onViewDetails, onCancel, onJoinConsulta
                                         {appt.type}
                                     </span>
                                 )}
+                                {appt.isParticipantOnline && (
+                                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700 animate-pulse flex items-center gap-1">
+                                        <span className="w-1 h-1 bg-green-600 rounded-full"></span>
+                                        Patient In-Call
+                                    </span>
+                                )}
                             </div>
 
                             <p className="text-sm text-gray-600 mb-3 flex items-center gap-1">

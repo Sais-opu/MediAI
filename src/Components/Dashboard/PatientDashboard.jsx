@@ -9,6 +9,7 @@ import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
     const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+    const [todayAppointments, setTodayAppointments] = useState([]);
     // pastAppointments and consultationHistory moved to MyAppointments
     const [loading, setLoading] = useState(true);
     const [showConsultation, setShowConsultation] = useState(false);
@@ -43,11 +44,12 @@ const PatientDashboard = () => {
                 { headers }
             );
 
-            const { metrics, upcomingAppointments } = response.data;
+            const { metrics, upcomingAppointments, todayAppointments } = response.data;
             // pastAppointments, history are unused here now
 
             setMetrics(metrics);
-            setUpcomingAppointments(upcomingAppointments);
+            setTodayAppointments(todayAppointments || []);
+            setUpcomingAppointments(upcomingAppointments || []);
 
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
@@ -118,7 +120,7 @@ const PatientDashboard = () => {
 
     const handleJoinConsultation = async (appointmentId) => {
         // Check if it's consultation time
-        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        const appointment = [...todayAppointments, ...upcomingAppointments].find(apt => apt.id === appointmentId);
         if (!appointment) return;
 
         if (appointment.status === "Cancelled") {
@@ -219,6 +221,99 @@ const PatientDashboard = () => {
                 </div>
             </div>
 
+            {/* Today's Appointments Section */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Today's Appointments</h2>
+                    {todayAppointments.length > 0 && (
+                        <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                            Live Sessions
+                        </span>
+                    )}
+                </div>
+
+                {todayAppointments.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p className="text-gray-500">No appointments scheduled for today</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {todayAppointments.map((appointment) => (
+                            <div key={appointment.id} className="border-2 border-primary/20 rounded-lg p-4 bg-primary/5 hover:border-primary/40 transition-all shadow-sm">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="text-lg font-semibold text-gray-800">
+                                                        {appointment.doctorName}
+                                                    </h3>
+                                                    {appointment.isParticipantOnline && (
+                                                        <span className="badge badge-success animate-pulse flex items-center gap-1">
+                                                            <span className="w-1.5 h-1.5 bg-green-700 rounded-full"></span>
+                                                            Doctor Ready
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-gray-600 mb-2">{appointment.specialization}</p>
+                                                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                                    <div className="flex items-center gap-1 font-bold text-primary">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span>{appointment.appointmentTime}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className={`badge ${appointment.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
+                                                            {appointment.paymentStatus}
+                                                        </span>
+                                                    </div>
+                                                    {(appointment.consultationType?.toLowerCase() === 'online' ||
+                                                        appointment.consultationType?.toLowerCase() === 'telemedicine' ||
+                                                        appointment.medium?.toLowerCase() === 'online' ||
+                                                        appointment.medium?.toLowerCase() === 'telemedicine' ||
+                                                        appointment.meetingType?.toLowerCase() === 'online' ||
+                                                        appointment.meetingType?.toLowerCase() === 'telemedicine') && (
+                                                            <span className="badge badge-info">Online Consultation</span>
+                                                        )}
+                                                    {appointment.type === 'Emergency' && (
+                                                        <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(appointment.consultationType?.toLowerCase() === 'online' ||
+                                            appointment.consultationType?.toLowerCase() === 'telemedicine' ||
+                                            appointment.medium?.toLowerCase() === 'online' ||
+                                            appointment.medium?.toLowerCase() === 'telemedicine' ||
+                                            appointment.meetingType?.toLowerCase() === 'online' ||
+                                            appointment.meetingType?.toLowerCase() === 'telemedicine') && (
+                                                <button
+                                                    onClick={() => handleJoinConsultation(appointment.id)}
+                                                    className="btn btn-primary btn-sm shadow-md"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                    Join Now
+                                                </button>
+                                            )}
+                                        <button
+                                            onClick={() => handleViewDetails(appointment)}
+                                            className="btn btn-outline btn-sm"
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Upcoming Appointments Section */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Upcoming Appointments</h2>
@@ -238,9 +333,17 @@ const PatientDashboard = () => {
                                     <div className="flex-1">
                                         <div className="flex items-start gap-4">
                                             <div className="flex-1">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                                                    {appointment.doctorName}
-                                                </h3>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="text-lg font-semibold text-gray-800">
+                                                        {appointment.doctorName}
+                                                    </h3>
+                                                    {appointment.isParticipantOnline && (
+                                                        <span className="badge badge-success animate-pulse flex items-center gap-1 text-[10px]">
+                                                            <span className="w-1.5 h-1.5 bg-green-700 rounded-full"></span>
+                                                            Doctor Ready
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-sm text-gray-600 mb-2">{appointment.specialization}</p>
                                                 <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                                                     <div className="flex items-center gap-1">
@@ -270,6 +373,12 @@ const PatientDashboard = () => {
                                                         )}
                                                     {appointment.type === 'Emergency' && (
                                                         <span className="badge badge-error text-white animate-pulse">Emergency</span>
+                                                    )}
+                                                    {appointment.isParticipantOnline && (
+                                                        <span className="badge badge-success animate-pulse flex items-center gap-1">
+                                                            <span className="w-1.5 h-1.5 bg-green-700 rounded-full"></span>
+                                                            Doctor Ready
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>

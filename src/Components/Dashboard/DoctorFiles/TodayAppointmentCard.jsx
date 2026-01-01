@@ -21,6 +21,12 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) =>
               {appt.type}
             </span>
           )}
+          {appt.isParticipantOnline && (
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700 animate-pulse flex items-center gap-1">
+              <span className="w-1 h-1 bg-green-600 rounded-full"></span>
+              Patient In-Call
+            </span>
+          )}
         </div>
         {appt.reason && (
           <p className="mt-1 text-xs text-gray-500">{appt.reason}</p>
@@ -29,7 +35,7 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) =>
           {appt.time} • <StatusBadge status={appt.status || "Pending"} />
         </p>
       </div>
-      <div className="flex flex-col gap-2 text-xs">
+      <div className="flex flex-row gap-2 text-xs">
         <div className="flex gap-2">
           <button
             onClick={onStartCall}
@@ -40,7 +46,7 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) =>
               }`}
             title={!isTelemedicine ? "Only for telemedicine consultations" : "Join Consultation"}
           >
-            {isTelemedicine ? "Join" : "Physical"}
+            {isTelemedicine ? "Join Consultation" : "Physical"}
           </button>
           <button
             onClick={onViewDetails}

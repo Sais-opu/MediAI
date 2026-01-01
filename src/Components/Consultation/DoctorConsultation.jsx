@@ -1,4 +1,3 @@
-//consultation/doctorConsultation.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -10,7 +9,6 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const navigate = useNavigate();
     const [consultationData, setConsultationData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [sessionStatus, setSessionStatus] = useState("waiting");
     const [patientJoined, setPatientJoined] = useState(false);
 
     // Video/Audio states
@@ -19,10 +17,10 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [localVideoTrack, setLocalVideoTrack] = useState(null);
     const [localAudioTrack, setLocalAudioTrack] = useState(null);
+    const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
 
     // Agora states
     const client = useRef(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
-    const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
 
     // Socket.io states
@@ -46,178 +44,207 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const token = localStorage.getItem("authToken");
 
     useEffect(() => {
+        let isSubscribed = true;
+        let currentSocket = null;
+        let currentVideoTrack = null;
+        let currentAudioTrack = null;
+
+        const initializeConsultation = async () => {
+            try {
+                if (!isSubscribed) return;
+                setLoading(true);
+                const headers = { Authorization: `Bearer ${token}` };
+
+                // Generate consultation token
+                const response = await axios.post(
+                    "/consultation/generate-token",
+                    { appointmentId },
+                    { headers }
+                );
+
+                if (!isSubscribed) return;
+
+                if (response.data.mock) {
+                    toast.warning("Agora credentials missing. Video/Audio will not work, but Chat will be active.");
+                }
+
+                const { agoraAppId, agoraToken, channelName, uid } = response.data;
+                setConsultationData(response.data);
+
+                // Fetch patient profile
+                await fetchPatientProfile(response.data.appointment);
+
+                if (agoraAppId && agoraToken) {
+                    try {
+                        // Prevent double join
+                        if (client.current.connectionState === "DISCONNECTED") {
+                            await client.current.join(agoraAppId, channelName, agoraToken, uid);
+                        }
+
+                        if (!isSubscribed) {
+                            await client.current.leave();
+                            return;
+                        }
+
+                        // Create and publish tracks
+                        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks().catch(err => {
+                            console.error("Media permission error:", err);
+                            toast.error("Could not access camera or microphone. Please check permissions.");
+                            throw err;
+                        });
+
+                        currentAudioTrack = audioTrack;
+                        currentVideoTrack = videoTrack;
+                        setLocalAudioTrack(audioTrack);
+                        setLocalVideoTrack(videoTrack);
+
+                        await client.current.publish([audioTrack, videoTrack]);
+
+                        // Handle remote users
+                        client.current.on("user-published", async (user, mediaType) => {
+                            await client.current.subscribe(user, mediaType);
+                            if (mediaType === "video") {
+                                setPatientJoined(true);
+                                setRemoteVideoTrack(user.videoTrack);
+                            }
+                            if (mediaType === "audio") {
+                                user.audioTrack.play();
+                            }
+                        });
+
+                        client.current.on("user-unpublished", (user) => {
+                            if (user.uid !== client.current.uid) {
+                                setPatientJoined(false);
+                                setRemoteVideoTrack(null);
+                            }
+                        });
+                    } catch (agoraErr) {
+                        console.error("Agora initialization failed:", agoraErr);
+                        if (!agoraErr.message?.includes("already in connecting/connected state")) {
+                            toast.error(`Video/Audio failed: ${agoraErr.message || "Unknown error"}. Chat will still work.`);
+                        }
+                    }
+                }
+
+                // Initialize Socket.io
+                currentSocket = await initializeSocket(response.data.consultationId);
+
+                // Fetch prescription if available
+                await fetchPrescription(response.data.consultationId);
+
+            } catch (error) {
+                if (!isSubscribed) return;
+                console.error("Error initializing consultation:", error);
+                const message = error.response?.data?.message || error.message || "Failed to start consultation";
+                toast.error(message);
+            } finally {
+                if (isSubscribed) setLoading(false);
+            }
+        };
+
         initializeConsultation();
+
         return () => {
-            cleanup();
+            isSubscribed = false;
+            if (currentVideoTrack) {
+                currentVideoTrack.stop();
+                currentVideoTrack.close();
+            }
+            if (currentAudioTrack) {
+                currentAudioTrack.stop();
+                currentAudioTrack.close();
+            }
+            if (client.current) {
+                client.current.leave();
+            }
+            if (currentSocket) {
+                currentSocket.disconnect();
+            }
         };
     }, [appointmentId]);
 
-    const cleanup = async () => {
-        // Cleanup Agora
-        if (localVideoTrack) {
-            localVideoTrack.stop();
-            localVideoTrack.close();
+    // Play remote video when track and ref are both ready
+    useEffect(() => {
+        if (!loading && remoteVideoTrack && remoteVideoRef.current) {
+            remoteVideoTrack.play(remoteVideoRef.current);
         }
-        if (localAudioTrack) {
-            localAudioTrack.stop();
-            localAudioTrack.close();
-        }
-        if (client.current) {
-            await client.current.leave();
-        }
-        // Cleanup Socket
-        if (socket) {
-            socket.disconnect();
-        }
-    };
-
-    const initializeConsultation = async () => {
-        try {
-            setLoading(true);
-            const headers = { Authorization: `Bearer ${token}` };
-
-            // Generate consultation token
-            const response = await axios.post(
-                "/consultation/generate-token",
-                { appointmentId },
-                { headers }
-            );
-
-            const { agoraAppId, agoraToken, channelName, uid } = response.data;
-            setConsultationData(response.data);
-
-            // Fetch patient profile
-            await fetchPatientProfile(response.data.appointment);
-
-            // Initialize Agora
-            await client.current.join(agoraAppId, channelName, agoraToken, uid);
-
-            // Create and publish tracks
-            const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-
-            setLocalAudioTrack(audioTrack);
-            setLocalVideoTrack(videoTrack);
-
-            await client.current.publish([audioTrack, videoTrack]);
-
-            if (localVideoRef.current) {
-                videoTrack.play(localVideoRef.current);
-            }
-
-            // Handle remote users
-            client.current.on("user-published", async (user, mediaType) => {
-                await client.current.subscribe(user, mediaType);
-                if (mediaType === "video") {
-                    setPatientJoined(true);
-                    if (remoteVideoRef.current) {
-                        user.videoTrack.play(remoteVideoRef.current);
-                    }
-                }
-                if (mediaType === "audio") {
-                    user.audioTrack.play();
-                }
-            });
-
-            client.current.on("user-unpublished", (user) => {
-                if (user.uid !== client.current.uid) {
-                    setPatientJoined(false);
-                }
-            });
-
-            // Initialize Socket.io
-            await initializeSocket(response.data.consultationId);
-
-            // Fetch prescription if available
-            await fetchPrescription();
-
-        } catch (error) {
-            console.error("Error initializing consultation:", error);
-            const message = error.response?.data?.message || "Failed to start consultation";
-            toast.error(message);
-
-            if (message.includes("Not consultation time yet")) {
-                setTimeout(() => {
-                    onClose();
-                }, 2000);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [loading, remoteVideoTrack]);
 
     const initializeSocket = async (consultationId) => {
-        const newSocket = io("/", {
-            auth: { token }
-        });
-
-        newSocket.on("connect", () => {
-            console.log("Socket connected");
-            const userId = JSON.parse(atob(token.split('.')[1])).id;
-            newSocket.emit("join-consultation", {
-                consultationId,
-                userId,
-                role: "doctor"
+        try {
+            const newSocket = io("/", {
+                auth: { token }
             });
-        });
 
-        newSocket.on("receive-message", (data) => {
-            setMessages(prev => [...prev, {
-                id: Date.now(),
-                text: data.message,
-                sender: data.role === "doctor" ? "doctor" : "patient",
-                timestamp: data.timestamp
-            }]);
-        });
+            newSocket.on("connect", () => {
+                const userId = JSON.parse(atob(token.split('.')[1])).id;
+                newSocket.emit("join-consultation", {
+                    consultationId,
+                    userId,
+                    role: "doctor"
+                });
+            });
 
-        newSocket.on("user-joined", (data) => {
-            if (data.role === "patient") {
-                setPatientJoined(true);
-                toast.info("Patient has joined the consultation");
-            }
-        });
+            newSocket.on("receive-message", (data) => {
+                setMessages(prev => [...prev, {
+                    id: Date.now(),
+                    text: data.message,
+                    sender: data.role === "doctor" ? "doctor" : "patient",
+                    timestamp: data.timestamp
+                }]);
+            });
 
-        setSocket(newSocket);
+            newSocket.on("room-status", (data) => {
+                const myId = JSON.parse(atob(token.split('.')[1])).id;
+                const otherInRoom = data.participants.some(p => p !== myId);
+                if (otherInRoom) {
+                    setPatientJoined(true);
+                }
+            });
+
+            newSocket.on("user-joined", (data) => {
+                if (data.role === "patient") {
+                    setPatientJoined(true);
+                    toast.info("Patient has joined the consultation");
+                }
+            });
+
+            newSocket.on("user-left", (data) => {
+                if (data.role === "patient") {
+                    setPatientJoined(false);
+                    setRemoteVideoTrack(null);
+                    toast.warn("Patient has left the consultation");
+                }
+            });
+
+            setSocket(newSocket);
+            return newSocket;
+        } catch (error) {
+            console.error("Socket error:", error);
+            return null;
+        }
     };
 
-    const fetchPrescription = async () => {
+    const fetchPrescription = async (consultationId) => {
         try {
-            if (consultationData?.consultationId) {
+            if (consultationId) {
                 const headers = { Authorization: `Bearer ${token}` };
                 const response = await axios.get(
-                    `/consultation/${consultationData.consultationId}/prescription`,
+                    `/consultation/${consultationId}/prescription`,
                     { headers }
                 );
                 setPrescription(response.data);
             }
         } catch (error) {
-            // Prescription might not exist yet
             console.log("Prescription not available yet");
-        }
-    };
-
-    const checkConsultationStatus = async () => {
-        try {
-            const headers = { Authorization: `Bearer ${token}` };
-            const response = await axios.get(
-                `/consultation/${appointmentId}/status`,
-                { headers }
-            );
-
-            if (response.data.exists) {
-                setSessionStatus(response.data.sessionStatus);
-                setPatientJoined(response.data.patientJoined);
-            }
-        } catch (error) {
-            console.error("Error checking status:", error);
         }
     };
 
     const fetchPatientProfile = async (appointment) => {
         try {
-            const data = appointment || consultationData?.appointment;
             setPatientProfile({
-                name: data?.patientName || "Patient",
-                condition: data?.reason || "N/A"
+                name: appointment?.patientName || "Patient",
+                condition: appointment?.reason || "N/A"
             });
         } catch (error) {
             console.error("Error fetching patient profile:", error);
@@ -244,18 +271,12 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                 const screenTrack = await AgoraRTC.createScreenVideoTrack();
                 await client.current.unpublish(localVideoTrack);
                 await client.current.publish(screenTrack);
-                if (localVideoRef.current) {
-                    screenTrack.play(localVideoRef.current);
-                }
                 setIsScreenSharing(true);
                 setLocalVideoTrack(screenTrack);
             } else {
                 const videoTrack = await AgoraRTC.createCameraVideoTrack();
                 await client.current.unpublish(localVideoTrack);
                 await client.current.publish(videoTrack);
-                if (localVideoRef.current) {
-                    videoTrack.play(localVideoRef.current);
-                }
                 setIsScreenSharing(false);
                 setLocalVideoTrack(videoTrack);
             }
@@ -266,7 +287,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     };
 
     const sendMessage = () => {
-        if (newMessage.trim() && socket) {
+        if (newMessage.trim() && socket && consultationData) {
             const userId = JSON.parse(atob(token.split('.')[1])).id;
             socket.emit("send-message", {
                 consultationId: consultationData.consultationId,
@@ -316,7 +337,6 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                 { headers }
             );
             toast.success("Consultation ended successfully");
-            cleanup();
             onClose();
         } catch (error) {
             console.error("Error ending consultation:", error);
@@ -327,22 +347,9 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     if (loading) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 text-center">
+                <div className="bg-white rounded-lg p-8 text-center text-black">
                     <div className="loading loading-spinner loading-lg text-primary"></div>
                     <p className="mt-4">Initializing consultation...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!patientJoined && sessionStatus === "waiting") {
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 text-center max-w-md">
-                    <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
-                    <h2 className="text-2xl font-bold mb-2">Waiting for patient to join…</h2>
-                    <p className="text-gray-600">The consultation will begin once the patient joins.</p>
-                    <button onClick={onClose} className="btn btn-outline mt-4">Cancel</button>
                 </div>
             </div>
         );
@@ -352,9 +359,17 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
             {/* Header */}
             <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
-                <div>
-                    <h2 className="text-xl font-bold">Consultation with {patientProfile?.name || "Patient"}</h2>
-                    <p className="text-sm text-gray-400">{consultationData?.appointment?.reason}</p>
+                <div className="flex items-center gap-4">
+                    <div>
+                        <h2 className="text-xl font-bold">Consultation with {patientProfile?.name || "Patient"}</h2>
+                        <p className="text-sm text-gray-400">{consultationData?.appointment?.reason}</p>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-700">
+                        <div className={`w-2 h-2 rounded-full ${patientJoined ? "bg-green-500 animate-pulse" : "bg-gray-500"}`}></div>
+                        <span className="text-xs font-medium">
+                            {patientJoined ? "Patient Connected" : "Patient Offline"}
+                        </span>
+                    </div>
                 </div>
                 <button onClick={onClose} className="btn btn-sm btn-ghost">Close</button>
             </div>
@@ -362,42 +377,47 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
             <div className="flex-1 flex overflow-hidden">
                 {/* Main Video Area */}
                 <div className="flex-1 flex flex-col">
-                    <div className="flex-1 bg-black relative">
+                    <div className="flex-1 bg-black relative overflow-hidden">
                         {/* Remote Video (Patient) */}
-                        <div ref={remoteVideoRef} className="w-full h-full"></div>
+                        <video
+                            ref={remoteVideoRef}
+                            autoPlay
+                            playsInline
+                            className="w-full h-full object-contain bg-gray-900"
+                        />
 
-                        {/* Local Video (Doctor) */}
-                        <div className="absolute bottom-4 right-4 w-64 h-48 bg-gray-800 rounded-lg overflow-hidden">
-                            <div ref={localVideoRef} className="w-full h-full"></div>
+                        {/* Overlaid Controls */}
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-gray-900/60 backdrop-blur-md rounded-full border border-gray-700 shadow-2xl transition-all hover:bg-gray-900/80 z-10 opacity-80 hover:opacity-100">
+                            <button
+                                onClick={toggleVideo}
+                                className={`btn btn-circle btn-sm md:btn-md ${isVideoEnabled ? "btn-primary" : "btn-error"}`}
+                                title={isVideoEnabled ? "Turn Camera Off" : "Turn Camera On"}
+                            >
+                                {isVideoEnabled ? "📹" : "📹❌"}
+                            </button>
+                            <button
+                                onClick={toggleAudio}
+                                className={`btn btn-circle btn-sm md:btn-md ${isAudioEnabled ? "btn-primary" : "btn-error"}`}
+                                title={isAudioEnabled ? "Mute Microphone" : "Unmute Microphone"}
+                            >
+                                {isAudioEnabled ? "🎤" : "🎤❌"}
+                            </button>
+                            <button
+                                onClick={toggleScreenShare}
+                                className={`btn btn-circle btn-sm md:btn-md ${isScreenSharing ? "btn-primary" : "btn-outline border-white text-white"}`}
+                                title="Share Screen"
+                            >
+                                🖥️
+                            </button>
+                            <div className="w-px h-6 bg-gray-700 mx-2"></div>
+                            <button
+                                onClick={() => endConsultation("Completed")}
+                                className="btn btn-circle btn-sm md:btn-md btn-error"
+                                title="End Call"
+                            >
+                                📞
+                            </button>
                         </div>
-                    </div>
-
-                    {/* Controls */}
-                    <div className="bg-gray-800 p-4 flex justify-center gap-4">
-                        <button
-                            onClick={toggleVideo}
-                            className={`btn btn-circle ${isVideoEnabled ? "btn-primary" : "btn-error"}`}
-                        >
-                            {isVideoEnabled ? "📹" : "📹❌"}
-                        </button>
-                        <button
-                            onClick={toggleAudio}
-                            className={`btn btn-circle ${isAudioEnabled ? "btn-primary" : "btn-error"}`}
-                        >
-                            {isAudioEnabled ? "🎤" : "🎤❌"}
-                        </button>
-                        <button
-                            onClick={toggleScreenShare}
-                            className={`btn btn-circle ${isScreenSharing ? "btn-primary" : "btn-outline"}`}
-                        >
-                            🖥️
-                        </button>
-                        <button
-                            onClick={() => endConsultation("Completed")}
-                            className="btn btn-circle btn-error"
-                        >
-                            📞
-                        </button>
                     </div>
                 </div>
 
@@ -411,7 +431,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                     </div>
 
                     {/* Chat Panel */}
-                    <div className="flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-1 flex flex-col overflow-hidden text-black">
                         <div className="flex-1 overflow-y-auto p-4 space-y-2">
                             {messages.map((msg) => (
                                 <div
@@ -437,101 +457,6 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                                 Send
                             </button>
                         </div>
-                    </div>
-
-                    {/* Prescription Form - Same as before */}
-                    <div className="hidden flex-1 overflow-y-auto p-4">
-                        <h3 className="font-bold mb-4">Prescription</h3>
-                        {prescription.medications.map((med, index) => (
-                            <div key={index} className="mb-4 p-3 border rounded">
-                                <input
-                                    type="text"
-                                    placeholder="Medication name"
-                                    value={med.name}
-                                    onChange={(e) => updateMedication(index, "name", e.target.value)}
-                                    className="input input-bordered w-full mb-2"
-                                />
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Dosage"
-                                        value={med.dosage}
-                                        onChange={(e) => updateMedication(index, "dosage", e.target.value)}
-                                        className="input input-bordered"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Frequency"
-                                        value={med.frequency}
-                                        onChange={(e) => updateMedication(index, "frequency", e.target.value)}
-                                        className="input input-bordered"
-                                    />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Duration"
-                                    value={med.duration}
-                                    onChange={(e) => updateMedication(index, "duration", e.target.value)}
-                                    className="input input-bordered w-full mt-2"
-                                />
-                            </div>
-                        ))}
-                        <button onClick={addMedication} className="btn btn-outline btn-sm mb-4">
-                            + Add Medication
-                        </button>
-                        <textarea
-                            placeholder="Instructions"
-                            value={prescription.instructions}
-                            onChange={(e) => setPrescription({ ...prescription, instructions: e.target.value })}
-                            className="textarea textarea-bordered w-full mb-4"
-                            rows="3"
-                        />
-                        <div className="form-control mb-4">
-                            <label className="label cursor-pointer">
-                                <span className="label-text">Follow-up required</span>
-                                <input
-                                    type="checkbox"
-                                    checked={prescription.followUp}
-                                    onChange={(e) => setPrescription({ ...prescription, followUp: e.target.checked })}
-                                    className="checkbox"
-                                />
-                            </label>
-                        </div>
-                        {prescription.followUp && (
-                            <input
-                                type="date"
-                                value={prescription.followUpDate}
-                                onChange={(e) => setPrescription({ ...prescription, followUpDate: e.target.value })}
-                                className="input input-bordered w-full mb-4"
-                            />
-                        )}
-                        <button onClick={savePrescription} className="btn btn-primary w-full">
-                            Save Prescription
-                        </button>
-                        <div className="mt-4 flex gap-2">
-                            <button
-                                onClick={() => endConsultation("Completed")}
-                                className="btn btn-success flex-1"
-                            >
-                                Complete
-                            </button>
-                            <button
-                                onClick={() => endConsultation("Needs Follow-up")}
-                                className="btn btn-warning flex-1"
-                            >
-                                Follow-up
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Patient Profile */}
-                    <div className="hidden flex-1 overflow-y-auto p-4">
-                        <h3 className="font-bold mb-4">Patient Profile</h3>
-                        {patientProfile && (
-                            <div>
-                                <p><strong>Name:</strong> {patientProfile.name}</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
