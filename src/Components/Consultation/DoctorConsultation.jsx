@@ -298,13 +298,23 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const sendMessage = () => {
         if (newMessage.trim() && socket && consultationData) {
             const userId = JSON.parse(atob(token.split('.')[1])).id;
-            socket.emit("send-message", {
+            const messageData = {
                 consultationId: consultationData.consultationId,
                 userId,
                 role: "doctor",
                 message: newMessage,
                 timestamp: new Date().toISOString()
-            });
+            };
+
+            // Optimistic UI update: Add message locally immediately
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                text: newMessage,
+                sender: "doctor", // Self is always "doctor" in this component
+                timestamp: messageData.timestamp
+            }]);
+
+            socket.emit("send-message", messageData);
             setNewMessage("");
         }
     };
