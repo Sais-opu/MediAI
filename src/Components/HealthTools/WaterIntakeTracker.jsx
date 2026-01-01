@@ -212,7 +212,7 @@ const WaterIntakeTracker = () => {
                     <div key={index} className="flex justify-between items-center p-3 bg-cyan-50 rounded-lg">
                       <span className="font-semibold text-cyan-700">+{log.amount}ml</span>
                       <span className="text-sm text-gray-600">
-                        {new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   ))}
