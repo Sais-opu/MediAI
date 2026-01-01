@@ -30,7 +30,15 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
 
-    // Prescription states
+    // Tab state
+    const [activeTab, setActiveTab] = useState("chat");
+
+    // Prescription states (simplified format)
+    const [medicine, setMedicine] = useState("");
+    const [dosage, setDosage] = useState("");
+    const [instructions, setInstructions] = useState("");
+
+    // Old prescription state for backward compatibility
     const [prescription, setPrescription] = useState({
         medications: [{ name: "", dosage: "", frequency: "", duration: "" }],
         instructions: "",
@@ -314,14 +322,22 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     };
 
     const savePrescription = async () => {
+        if (!medicine || !dosage) {
+            toast.warning("Medicine and dosage are required");
+            return;
+        }
+
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `/consultation/${consultationData.consultationId}/prescription`,
-                prescription,
+                `/doctor/appointments/${appointmentId}/prescription`,
+                { medicine, dosage, instructions },
                 { headers }
             );
             toast.success("Prescription saved successfully");
+            setMedicine("");
+            setDosage("");
+            setInstructions("");
         } catch (error) {
             console.error("Error saving prescription:", error);
             toast.error("Failed to save prescription");
@@ -425,39 +441,112 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                 <div className="w-96 bg-white flex flex-col border-l">
                     {/* Tabs */}
                     <div className="flex border-b">
-                        <button className="flex-1 p-2 font-semibold border-b-2 border-primary">Chat</button>
-                        <button className="flex-1 p-2 font-semibold">Prescription</button>
-                        <button className="flex-1 p-2 font-semibold">Profile</button>
+                        <button
+                            onClick={() => setActiveTab("chat")}
+                            className={`flex-1 p-2 font-semibold ${activeTab === "chat" ? "border-b-2 border-primary text-primary" : "text-gray-600"}`}
+                        >
+                            Chat
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("prescription")}
+                            className={`flex-1 p-2 font-semibold ${activeTab === "prescription" ? "border-b-2 border-primary text-primary" : "text-gray-600"}`}
+                        >
+                            Prescription
+                        </button>
                     </div>
 
                     {/* Chat Panel */}
-                    <div className="flex-1 flex flex-col overflow-hidden text-black">
-                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                            {messages.map((msg) => (
-                                <div
-                                    key={msg.id}
-                                    className={`p-2 rounded ${msg.sender === "doctor" ? "bg-primary text-white ml-auto" : "bg-gray-200"
-                                        }`}
-                                    style={{ maxWidth: "80%" }}
-                                >
-                                    {msg.text}
+                    {activeTab === "chat" && (
+                        <div className="flex-1 flex flex-col overflow-hidden text-black">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                {messages.map((msg) => (
+                                    <div
+                                        key={msg.id}
+                                        className={`p-2 rounded ${msg.sender === "doctor" ? "bg-primary text-white ml-auto" : "bg-gray-200"
+                                            }`}
+                                        style={{ maxWidth: "80%" }}
+                                    >
+                                        {msg.text}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-4 border-t flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                                    placeholder="Type a message..."
+                                    className="input input-bordered flex-1"
+                                />
+                                <button onClick={sendMessage} className="btn btn-primary">
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Prescription Panel */}
+                    {activeTab === "prescription" && (
+                        <div className="flex-1 flex flex-col overflow-hidden text-black p-6">
+                            <h3 className="text-lg font-bold mb-4">Add Prescription</h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Prescribing for <span className="font-semibold text-gray-800">
+                                    {patientProfile?.name || "Patient"}
+                                </span>
+                            </p>
+
+                            <div className="space-y-4 flex-1 overflow-y-auto">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Medicine Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={medicine}
+                                        onChange={(e) => setMedicine(e.target.value)}
+                                        placeholder="e.g., Amoxicillin"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    />
                                 </div>
-                            ))}
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Dosage <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={dosage}
+                                        onChange={(e) => setDosage(e.target.value)}
+                                        placeholder="e.g., 500mg twice daily for 7 days"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Instructions
+                                    </label>
+                                    <textarea
+                                        value={instructions}
+                                        onChange={(e) => setInstructions(e.target.value)}
+                                        placeholder="e.g., Take with food"
+                                        rows={3}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t mt-4">
+                                <button
+                                    onClick={savePrescription}
+                                    className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-focus font-medium transition-colors shadow-lg shadow-primary/20"
+                                >
+                                    Save Prescription
+                                </button>
+                            </div>
                         </div>
-                        <div className="p-4 border-t flex gap-2">
-                            <input
-                                type="text"
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                                placeholder="Type a message..."
-                                className="input input-bordered flex-1"
-                            />
-                            <button onClick={sendMessage} className="btn btn-primary">
-                                Send
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
