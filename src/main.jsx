@@ -6,8 +6,9 @@ import './index.css'
 import App from './App.jsx'
 import axios from 'axios'
 
+// Check if we are in production; otherwise, use localhost
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:5000";
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
@@ -35,9 +36,12 @@ import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
-import InvoicePage from './Components/Payment/InvoicePage.jsx'; import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
+import InvoicePage from './Components/Payment/InvoicePage.jsx';
+import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
+import MyAppointments from './Components/Dashboard/MyAppointments.jsx';
+import DoctorPatients from './Components/DOCTOR/DoctorPatients.jsx';
 import Service from './Components/Service.jsx'
 import AboutUs from './Components/About.jsx'
 import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
@@ -171,6 +175,14 @@ const router = createBrowserRouter([
           </Protected>
         ),
       },
+      {
+        path: "/doctor/patients",
+        element: (
+          <Protected>
+            <DoctorPatients />
+          </Protected>
+        ),
+      },
 
       // Patient Booking Flow
       {
@@ -187,6 +199,14 @@ const router = createBrowserRouter([
         element: (
           <Protected>
             <PatientBooking />
+          </Protected>
+        ),
+      },
+      {
+        path: "/appointments/my",
+        element: (
+          <Protected>
+            <MyAppointments />
           </Protected>
         ),
       },

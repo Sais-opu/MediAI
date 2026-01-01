@@ -1,189 +1,236 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import { io } from "socket.io-client";
 
 const PatientConsultation = ({ appointmentId, onClose }) => {
-    const navigate = useNavigate();
     const [consultationData, setConsultationData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showPreCallChecklist, setShowPreCallChecklist] = useState(true);
+    const [doctorJoined, setDoctorJoined] = useState(false);
+    const [showChecklist, setShowChecklist] = useState(true);
+
     const [checklist, setChecklist] = useState({
         camera: false,
         microphone: false,
         connection: false
     });
 
-    // Video/Audio states
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-    const localVideoRef = useRef(null);
+    const [localVideoTrack, setLocalVideoTrack] = useState(null);
+    const [localAudioTrack, setLocalAudioTrack] = useState(null);
+    const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
+
+    const client = useRef(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
     const remoteVideoRef = useRef(null);
 
-    // Chat states
+    const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-
-    // Prescription
-    const [prescription, setPrescription] = useState(null);
-    const [rating, setRating] = useState(0);
-    const [ratingComment, setRatingComment] = useState("");
-
-    // Doctor profile
     const [doctorProfile, setDoctorProfile] = useState(null);
-
     const token = localStorage.getItem("authToken");
 
     useEffect(() => {
-        if (!showPreCallChecklist) {
-            initializeConsultation();
-        }
-        return () => {
-            if (localVideoRef.current?.srcObject) {
-                localVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        let isSubscribed = true;
+        let currentSocket = null;
+        let currentVideoTrack = null;
+        let currentAudioTrack = null;
+
+        const initializeConsultation = async () => {
+            try {
+                if (!isSubscribed) return;
+                setLoading(true);
+                const headers = { Authorization: `Bearer ${token}` };
+
+                const response = await axios.post(
+                    "/consultation/generate-token",
+                    { appointmentId },
+                    { headers }
+                );
+
+                if (!isSubscribed) return;
+
+                if (response.data.mock) {
+                    toast.warning("Agora credentials missing. Video/Audio will not work, but Chat will be active.");
+                }
+
+                const { agoraAppId, agoraToken, channelName, uid } = response.data;
+                setConsultationData(response.data);
+
+                await fetchDoctorProfile(response.data.appointment);
+
+                if (agoraAppId && agoraToken) {
+                    try {
+                        if (client.current.connectionState === "DISCONNECTED") {
+                            await client.current.join(agoraAppId, channelName, agoraToken, uid);
+                        }
+
+                        if (!isSubscribed) {
+                            await client.current.leave();
+                            return;
+                        }
+
+                        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks().catch(err => {
+                            console.error("Media permission error:", err);
+                            toast.error("Could not access camera or microphone. Please check permissions.");
+                            throw err;
+                        });
+
+                        currentAudioTrack = audioTrack;
+                        currentVideoTrack = videoTrack;
+                        setLocalAudioTrack(audioTrack);
+                        setLocalVideoTrack(videoTrack);
+
+                        await client.current.publish([audioTrack, videoTrack]);
+
+                        client.current.on("user-published", async (user, mediaType) => {
+                            await client.current.subscribe(user, mediaType);
+                            if (mediaType === "video") {
+                                setDoctorJoined(true);
+                                setRemoteVideoTrack(user.videoTrack);
+                            }
+                            if (mediaType === "audio") {
+                                user.audioTrack.play();
+                            }
+                        });
+
+                        client.current.on("user-unpublished", (user) => {
+                            if (user.uid !== client.current.uid) {
+                                setDoctorJoined(false);
+                                setRemoteVideoTrack(null);
+                            }
+                        });
+                    } catch (agoraErr) {
+                        console.error("Agora initialization failed:", agoraErr);
+                        if (!agoraErr.message?.includes("already in connecting/connected state")) {
+                            toast.error(`Video/Audio failed: ${agoraErr.message || "Unknown error"}. Chat will still work.`);
+                        }
+                    }
+                }
+
+                currentSocket = await initializeSocket(response.data.consultationId);
+
+            } catch (error) {
+                if (!isSubscribed) return;
+                console.error("Error initializing consultation:", error);
+                toast.error(error.response?.data?.message || "Failed to start consultation");
+            } finally {
+                if (isSubscribed) setLoading(false);
             }
         };
-    }, [appointmentId, showPreCallChecklist]);
 
-    const runPreCallChecklist = async () => {
-        const results = { ...checklist };
+        if (!showChecklist) {
+            initializeConsultation();
+        }
 
-        // Test camera
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = stream;
+        return () => {
+            isSubscribed = false;
+            if (currentVideoTrack) {
+                currentVideoTrack.stop();
+                currentVideoTrack.close();
             }
-            results.camera = true;
-            stream.getTracks().forEach(track => track.stop());
-        } catch (error) {
-            console.error("Camera test failed:", error);
-            results.camera = false;
-        }
-
-        // Test microphone
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            results.microphone = true;
-            stream.getTracks().forEach(track => track.stop());
-        } catch (error) {
-            console.error("Microphone test failed:", error);
-            results.microphone = false;
-        }
-
-        // Test connection
-        try {
-            const response = await fetch("http://localhost:5000/test-cors");
-            results.connection = response.ok;
-        } catch (error) {
-            console.error("Connection test failed:", error);
-            results.connection = false;
-        }
-
-        setChecklist(results);
-        return results.camera && results.microphone && results.connection;
-    };
-
-    const handleStartChecklist = async () => {
-        const allPassed = await runPreCallChecklist();
-        if (allPassed) {
-            toast.success("All checks passed! You can join the consultation.");
-        } else {
-            toast.warning("Some checks failed. Please fix the issues before joining.");
-        }
-    };
-
-    const handleJoinConsultation = async () => {
-        const allPassed = checklist.camera && checklist.microphone && checklist.connection;
-        if (!allPassed) {
-            toast.error("Please complete all checklist items before joining");
-            return;
-        }
-        setShowPreCallChecklist(false);
-    };
-
-    const initializeConsultation = async () => {
-        try {
-            setLoading(true);
-            const headers = { Authorization: `Bearer ${token}` };
-
-            // Generate consultation token
-            const response = await axios.post(
-                "http://localhost:5000/consultation/generate-token",
-                { appointmentId },
-                { headers }
-            );
-
-            setConsultationData(response.data);
-
-            // Initialize video
-            await initializeVideo();
-
-            // Fetch doctor profile
-            await fetchDoctorProfile();
-
-            // Fetch prescription if available
-            await fetchPrescription();
-
-        } catch (error) {
-            console.error("Error initializing consultation:", error);
-            const message = error.response?.data?.message || "Failed to join consultation";
-            toast.error(message);
-
-            if (message.includes("Not consultation time yet")) {
-                setTimeout(() => {
-                    onClose();
-                }, 2000);
+            if (currentAudioTrack) {
+                currentAudioTrack.stop();
+                currentAudioTrack.close();
             }
-        } finally {
-            setLoading(false);
-        }
-    };
+            if (client.current) {
+                client.current.leave();
+            }
+            if (currentSocket) {
+                currentSocket.disconnect();
+            }
+        };
+    }, [appointmentId, showChecklist]);
 
-    const initializeVideo = async () => {
+    // Play remote video when track and ref are both ready
+    useEffect(() => {
+        if (!loading && remoteVideoTrack && remoteVideoRef.current) {
+            remoteVideoTrack.play(remoteVideoRef.current);
+        }
+    }, [loading, remoteVideoTrack]);
+
+    const initializeSocket = async (consultationId) => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: isVideoEnabled,
-                audio: isAudioEnabled
+            const newSocket = io(import.meta.env.VITE_API_URL || "http://localhost:5000", {
+                auth: { token },
+                withCredentials: true
             });
 
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = stream;
-            }
+            newSocket.on("connect", () => {
+                const userId = JSON.parse(atob(token.split('.')[1])).id;
+                newSocket.emit("join-consultation", {
+                    consultationId,
+                    userId,
+                    role: "patient"
+                });
+            });
+
+            newSocket.on("receive-message", (data) => {
+                setMessages(prev => [...prev, {
+                    id: Date.now(),
+                    text: data.message,
+                    sender: data.role === "doctor" ? "doctor" : "patient",
+                    timestamp: data.timestamp
+                }]);
+            });
+
+            newSocket.on("room-status", (data) => {
+                const myId = JSON.parse(atob(token.split('.')[1])).id;
+                const otherInRoom = data.participants.some(p => p !== myId);
+                if (otherInRoom) {
+                    setDoctorJoined(true);
+                }
+            });
+
+            newSocket.on("user-joined", (data) => {
+                if (data.role === "doctor") {
+                    setDoctorJoined(true);
+                    toast.info("Doctor has joined the consultation");
+                }
+            });
+
+            newSocket.on("user-left", (data) => {
+                if (data.role === "doctor") {
+                    setDoctorJoined(false);
+                    setRemoteVideoTrack(null);
+                    toast.warn("Doctor has left the consultation");
+                }
+            });
+
+            setSocket(newSocket);
+            return newSocket;
         } catch (error) {
-            console.error("Error accessing media devices:", error);
-            toast.error("Could not access camera/microphone");
+            console.error("Socket error:", error);
+            return null;
         }
     };
 
-    const fetchDoctorProfile = async () => {
+    const fetchDoctorProfile = async (appointment) => {
         try {
-            // Fetch doctor profile from consultation data
             setDoctorProfile({
-                name: "Dr. Smith", // This would come from API
-                specialization: "Cardiologist"
+                fullName: appointment?.doctorName || "Doctor",
+                specialty: appointment?.specialization || "Physician"
             });
         } catch (error) {
             console.error("Error fetching doctor profile:", error);
         }
     };
 
-    const fetchPrescription = async () => {
+    const handleStartChecklist = async () => {
         try {
-            if (consultationData?.consultationId) {
-                const headers = { Authorization: `Bearer ${token}` };
-                const response = await axios.get(
-                    `http://localhost:5000/consultation/${consultationData.consultationId}/prescription`,
-                    { headers }
-                );
-                setPrescription(response.data);
-            }
-        } catch (error) {
-            // Prescription might not exist yet
-            console.log("Prescription not available yet");
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            setChecklist({ camera: true, microphone: true, connection: true });
+            stream.getTracks().forEach(track => track.stop());
+            toast.success("Ready for consultation!");
+        } catch (err) {
+            console.error("Permission error:", err);
+            toast.error("Camera and Microphone access are required");
         }
+    };
+
+    const handleJoinConsultation = () => {
+        setShowChecklist(false);
     };
 
     const toggleVideo = async () => {
@@ -201,15 +248,25 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
     };
 
     const sendMessage = () => {
-        if (newMessage.trim() && socket) {
+        if (newMessage.trim() && socket && consultationData) {
             const userId = JSON.parse(atob(token.split('.')[1])).id;
-            socket.emit("send-message", {
+            const messageData = {
                 consultationId: consultationData.consultationId,
                 userId,
                 role: "patient",
                 message: newMessage,
                 timestamp: new Date().toISOString()
-            });
+            };
+
+            // Optimistic UI update: Add message locally immediately
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                text: newMessage,
+                sender: "patient", // Self is always "patient" in this component
+                timestamp: messageData.timestamp
+            }]);
+
+            socket.emit("send-message", messageData);
             setNewMessage("");
         }
     };
@@ -261,87 +318,60 @@ ${prescription.followUp ? `Follow-up Date: ${prescription.followUpDate}` : ''}
         URL.revokeObjectURL(url);
     };
 
-    if (loading && !showPreCallChecklist) {
+    if (showChecklist) {
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 text-center">
-                    <div className="loading loading-spinner loading-lg text-primary"></div>
-                    <p className="mt-4">Joining consultation...</p>
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-8 max-w-xl w-full shadow-2xl text-black">
+                    <h2 className="text-3xl font-bold mb-6 text-primary">Pre-Consultation Check</h2>
+                    <div className="space-y-4 mb-8">
+                        <div className="flex items-center justify-between p-4 border rounded-xl bg-gray-50">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">📹</span>
+                                <span className="font-medium">Camera Test</span>
+                            </div>
+                            {checklist.camera ? (
+                                <span className="badge badge-success py-3 px-4">✓ Passed</span>
+                            ) : (
+                                <span className="badge badge-secondary py-3 px-4">Pending</span>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-between p-4 border rounded-xl bg-gray-50">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">🎤</span>
+                                <span className="font-medium">Microphone Test</span>
+                            </div>
+                            {checklist.microphone ? (
+                                <span className="badge badge-success py-3 px-4">✓ Passed</span>
+                            ) : (
+                                <span className="badge badge-secondary py-3 px-4">Pending</span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={handleStartChecklist} className="btn btn-primary flex-1">
+                            Run Hardware Tests
+                        </button>
+                        <button
+                            onClick={handleJoinConsultation}
+                            disabled={!checklist.camera || !checklist.microphone}
+                            className={`btn flex-1 ${(!checklist.camera || !checklist.microphone) ? 'btn-disabled' : 'btn-success text-white'}`}
+                        >
+                            Join Consultation
+                        </button>
+                        <button onClick={onClose} className="btn btn-ghost">Cancel</button>
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (showPreCallChecklist) {
+    if (loading) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 max-w-md w-full">
-                    <h2 className="text-2xl font-bold mb-6">Pre-Call Checklist</h2>
-
-                    <div className="space-y-4 mb-6">
-                        <div className="flex items-center justify-between p-4 border rounded">
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">📹</span>
-                                <span>Camera Test</span>
-                            </div>
-                            {checklist.camera ? (
-                                <span className="text-green-600">✓ Passed</span>
-                            ) : (
-                                <span className="text-gray-400">Not tested</span>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 border rounded">
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">🎤</span>
-                                <span>Microphone Test</span>
-                            </div>
-                            {checklist.microphone ? (
-                                <span className="text-green-600">✓ Passed</span>
-                            ) : (
-                                <span className="text-gray-400">Not tested</span>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 border rounded">
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">🌐</span>
-                                <span>Connection Test</span>
-                            </div>
-                            {checklist.connection ? (
-                                <span className="text-green-600">✓ Passed</span>
-                            ) : (
-                                <span className="text-gray-400">Not tested</span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <video
-                            ref={localVideoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full rounded"
-                            style={{ maxHeight: "200px" }}
-                        />
-                    </div>
-
-                    <div className="flex gap-2">
-                        <button onClick={handleStartChecklist} className="btn btn-outline flex-1">
-                            Run Tests
-                        </button>
-                        <button
-                            onClick={handleJoinConsultation}
-                            disabled={!checklist.camera || !checklist.microphone || !checklist.connection}
-                            className="btn btn-primary flex-1"
-                        >
-                            Join Consultation
-                        </button>
-                        <button onClick={onClose} className="btn btn-ghost">
-                            Cancel
-                        </button>
-                    </div>
+                <div className="bg-white rounded-lg p-8 text-center text-black">
+                    <div className="loading loading-spinner loading-lg text-primary"></div>
+                    <p className="mt-4">Connecting to doctor...</p>
                 </div>
             </div>
         );
@@ -349,72 +379,72 @@ ${prescription.followUp ? `Follow-up Date: ${prescription.followUpDate}` : ''}
 
     return (
         <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
-            {/* Header */}
-            <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
-                <div>
-                    <h2 className="text-xl font-bold">Consultation with {doctorProfile?.name || "Doctor"}</h2>
-                    <p className="text-sm text-gray-400">{doctorProfile?.specialization}</p>
+            <div className="bg-gray-800 text-white p-4 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-4">
+                    <div>
+                        <h2 className="text-xl font-bold">Consultation with {doctorProfile?.fullName || "Doctor"}</h2>
+                        <p className="text-sm text-gray-400">Please stay on this screen. Your consultation is live.</p>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-700">
+                        <div className={`w-2 h-2 rounded-full ${doctorJoined ? "bg-green-500 animate-pulse" : "bg-gray-500"}`}></div>
+                        <span className="text-xs font-medium">
+                            {doctorJoined ? "Doctor Ready" : "Doctor Offline"}
+                        </span>
+                    </div>
                 </div>
-                <button onClick={onClose} className="btn btn-sm btn-ghost">Close</button>
+                <button onClick={onClose} className="btn btn-sm btn-ghost">Leave</button>
             </div>
 
             <div className="flex-1 flex overflow-hidden">
-                {/* Main Video Area */}
                 <div className="flex-1 flex flex-col">
-                    <div className="flex-1 bg-black relative">
+                    <div className="flex-1 bg-black relative overflow-hidden">
                         {/* Remote Video (Doctor) */}
                         <video
                             ref={remoteVideoRef}
                             autoPlay
                             playsInline
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain bg-gray-900"
                         />
 
-                        {/* Local Video (Patient) */}
-                        <div className="absolute bottom-4 right-4 w-64 h-48 bg-gray-800 rounded-lg overflow-hidden">
-                            <video
-                                ref={localVideoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className="w-full h-full object-cover"
-                            />
+                        {/* Overlaid Controls */}
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-gray-900/60 backdrop-blur-md rounded-full border border-gray-700 shadow-2xl transition-all hover:bg-gray-900/80 z-10 opacity-80 hover:opacity-100">
+                            <button
+                                onClick={toggleVideo}
+                                className={`btn btn-circle btn-sm md:btn-md ${isVideoEnabled ? "btn-primary" : "btn-error"}`}
+                                title={isVideoEnabled ? "Turn Camera Off" : "Turn Camera On"}
+                            >
+                                {isVideoEnabled ? "📹" : "📹❌"}
+                            </button>
+                            <button
+                                onClick={toggleAudio}
+                                className={`btn btn-circle btn-sm md:btn-md ${isAudioEnabled ? "btn-primary" : "btn-error"}`}
+                                title={isAudioEnabled ? "Mute Microphone" : "Unmute Microphone"}
+                            >
+                                {isAudioEnabled ? "🎤" : "🎤❌"}
+                            </button>
+                            <div className="w-px h-6 bg-gray-700 mx-2"></div>
+                            <button
+                                onClick={onClose}
+                                className="btn btn-circle btn-sm md:btn-md btn-error"
+                                title="Leave Call"
+                            >
+                                📞
+                            </button>
                         </div>
-                    </div>
-
-                    {/* Controls */}
-                    <div className="bg-gray-800 p-4 flex justify-center gap-4">
-                        <button
-                            onClick={toggleVideo}
-                            className={`btn btn-circle ${isVideoEnabled ? "btn-primary" : "btn-error"}`}
-                        >
-                            {isVideoEnabled ? "📹" : "📹❌"}
-                        </button>
-                        <button
-                            onClick={toggleAudio}
-                            className={`btn btn-circle ${isAudioEnabled ? "btn-primary" : "btn-error"}`}
-                        >
-                            {isAudioEnabled ? "🎤" : "🎤❌"}
-                        </button>
                     </div>
                 </div>
 
-                {/* Sidebar */}
-                <div className="w-96 bg-white flex flex-col border-l">
-                    {/* Tabs */}
+                <div className="w-96 bg-white flex flex-col border-l text-black">
                     <div className="flex border-b">
                         <button className="flex-1 p-2 font-semibold border-b-2 border-primary">Chat</button>
-                        <button className="flex-1 p-2 font-semibold">Prescription</button>
-                        <button className="flex-1 p-2 font-semibold">Profile</button>
                     </div>
 
-                    {/* Chat Panel */}
                     <div className="flex-1 flex flex-col overflow-hidden">
                         <div className="flex-1 overflow-y-auto p-4 space-y-2">
                             {messages.map((msg) => (
                                 <div
                                     key={msg.id}
-                                    className={`p-2 rounded ${msg.sender === "patient" ? "bg-primary text-white ml-auto" : "bg-gray-200"
+                                    className={`p-2 rounded ${msg.sender === "patient" ? "bg-primary text-white ml-auto" : "bg-gray-200 text-black"
                                         }`}
                                     style={{ maxWidth: "80%" }}
                                 >
@@ -436,77 +466,6 @@ ${prescription.followUp ? `Follow-up Date: ${prescription.followUpDate}` : ''}
                             </button>
                         </div>
                     </div>
-
-                    {/* Prescription View */}
-                    <div className="hidden flex-1 overflow-y-auto p-4">
-                        {prescription ? (
-                            <div>
-                                <h3 className="font-bold mb-4">Prescription</h3>
-                                <div className="mb-4">
-                                    <h4 className="font-semibold mb-2">Medications:</h4>
-                                    {prescription.medications.map((med, index) => (
-                                        <div key={index} className="mb-2 p-2 bg-gray-100 rounded">
-                                            <p><strong>{med.name}</strong></p>
-                                            <p className="text-sm">{med.dosage} - {med.frequency} - {med.duration}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mb-4">
-                                    <h4 className="font-semibold mb-2">Instructions:</h4>
-                                    <p>{prescription.instructions}</p>
-                                </div>
-                                {prescription.followUp && (
-                                    <div className="mb-4">
-                                        <p><strong>Follow-up Date:</strong> {new Date(prescription.followUpDate).toLocaleDateString()}</p>
-                                    </div>
-                                )}
-                                <button onClick={downloadPrescription} className="btn btn-primary w-full mb-4">
-                                    Download Prescription
-                                </button>
-
-                                {/* Rating Section */}
-                                <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Rate this consultation:</h4>
-                                    <div className="flex gap-1 mb-2">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <button
-                                                key={star}
-                                                onClick={() => setRating(star)}
-                                                className={`text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
-                                            >
-                                                ★
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <textarea
-                                        placeholder="Add a comment (optional)"
-                                        value={ratingComment}
-                                        onChange={(e) => setRatingComment(e.target.value)}
-                                        className="textarea textarea-bordered w-full mb-2"
-                                        rows="2"
-                                    />
-                                    <button onClick={submitRating} className="btn btn-outline w-full">
-                                        Submit Rating
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center text-gray-500 mt-8">
-                                <p>Prescription will appear here after the consultation</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Doctor Profile */}
-                    <div className="hidden flex-1 overflow-y-auto p-4">
-                        <h3 className="font-bold mb-4">Doctor Profile</h3>
-                        {doctorProfile && (
-                            <div>
-                                <p><strong>Name:</strong> {doctorProfile.name}</p>
-                                <p><strong>Specialization:</strong> {doctorProfile.specialization}</p>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
         </div>
@@ -514,4 +473,3 @@ ${prescription.followUp ? `Follow-up Date: ${prescription.followUpDate}` : ''}
 };
 
 export default PatientConsultation;
-
