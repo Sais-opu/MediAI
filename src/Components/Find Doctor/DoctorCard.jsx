@@ -9,7 +9,7 @@ const DoctorsList = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const res = await axios.get("http://localhost:5001/api/doctors");
+                const res = await axios.get("http://localhost:5000/api/doctors");
                 setDoctors(res.data);
                 setLoading(false);
             } catch (err) {

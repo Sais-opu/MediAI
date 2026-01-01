@@ -43,7 +43,7 @@ export default function PatientBooking() {
     const authToken = localStorage.getItem("authToken");
     if (!authToken) return;
     try {
-      const res = await axios.get("http://localhost:5001/users/profile", {
+      const res = await axios.get("http://localhost:5000/users/profile", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setProfile({
@@ -68,7 +68,7 @@ export default function PatientBooking() {
 
   const loadDoctor = async () => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/doctors/${doctorId}`);
+      const res = await axios.get(`http://localhost:5000/api/doctors/${doctorId}`);
       setDoctor(res.data);
     } catch (err) {
       console.error("Failed to load doctor", err);
@@ -78,7 +78,7 @@ export default function PatientBooking() {
   const loadSlots = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/api/doctor/slots?doctorId=${doctorId}`
+        `http://localhost:5000/api/doctor/slots?doctorId=${doctorId}`
       );
       setSlots(res.data);
     } catch (err) {
@@ -131,7 +131,7 @@ export default function PatientBooking() {
       };
 
       const res = await axios.post(
-        "http://localhost:5001/api/appointments/book",
+        "http://localhost:5000/api/appointments/book",
         bookingData,
         {
           headers: {

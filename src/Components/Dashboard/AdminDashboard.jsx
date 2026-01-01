@@ -56,7 +56,7 @@ const AdminDashboard = () => {
 
         try {
             // Fetch metrics from backend
-            const metricsResponse = await axios.get('http://localhost:5001/api/admin/metrics', {
+            const metricsResponse = await axios.get('http://localhost:5000/api/admin/metrics', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -169,8 +169,8 @@ const AdminDashboard = () => {
                         const barColor = barColors[index % barColors.length];
                         const lighterColor = darkenColor(barColor, 30);
                         return (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className="flex-1 flex flex-col items-center h-full group"
                                 onMouseEnter={(e) => {
                                     const tooltip = e.currentTarget.querySelector('.revenue-tooltip');
@@ -184,8 +184,8 @@ const AdminDashboard = () => {
                                 <div className="w-full h-full flex flex-col items-center justify-end pb-10 relative">
                                     <div
                                         className="w-full rounded-t-lg hover:opacity-90 hover:shadow-xl transition-all cursor-pointer relative shadow-lg"
-                                        style={{ 
-                                            height: `${height}%`, 
+                                        style={{
+                                            height: `${height}%`,
                                             minHeight: revenue > 0 ? '30px' : '0',
                                             maxHeight: '100%',
                                             width: '100%',
@@ -194,7 +194,7 @@ const AdminDashboard = () => {
                                         }}
                                     >
                                     </div>
-                                    <div 
+                                    <div
                                         className="revenue-tooltip absolute -top-14 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap z-50 pointer-events-none shadow-xl font-semibold transition-opacity duration-200"
                                         style={{ opacity: 0 }}
                                     >

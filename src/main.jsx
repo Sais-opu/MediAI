@@ -7,7 +7,7 @@ import App from './App.jsx'
 import axios from 'axios'
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:5001";
+axios.defaults.baseURL = "http://localhost:5000";
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'

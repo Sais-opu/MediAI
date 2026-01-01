@@ -23,7 +23,7 @@ const AdminReportsPage = () => {
         if (!token) return;
 
         try {
-            const res = await axios.get("http://localhost:5001/api/reports", {
+            const res = await axios.get("http://localhost:5000/api/reports", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setReports(res.data);
@@ -55,10 +55,10 @@ const AdminReportsPage = () => {
             if (modalType === "ban") {
                 // Determine ID to use. Report has doctorId which might be string or ID.
                 // Based on backend implementation, we pass doctorId from report.
-                await axios.put(`http://localhost:5001/api/doctors/${selectedReport.doctorId}/ban`, {}, { headers });
+                await axios.put(`http://localhost:5000/api/doctors/${selectedReport.doctorId}/ban`, {}, { headers });
                 toast.success(`Doctor ${selectedReport.doctorName} has been banned.`);
             } else if (modalType === "delete") {
-                await axios.delete(`http://localhost:5001/api/doctors/${selectedReport.doctorId}`, { headers });
+                await axios.delete(`http://localhost:5000/api/doctors/${selectedReport.doctorId}`, { headers });
                 toast.success(`Doctor ${selectedReport.doctorName} profile deleted.`);
             }
             fetchReports(); // Refresh data
@@ -75,7 +75,7 @@ const AdminReportsPage = () => {
     const handleResolve = async (reportId, status) => {
         const token = localStorage.getItem("authToken");
         try {
-            await axios.put(`http://localhost:5001/api/reports/${reportId}/resolve`, { status }, {
+            await axios.put(`http://localhost:5000/api/reports/${reportId}/resolve`, { status }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.info(`Report marked as ${status}`);
@@ -133,8 +133,8 @@ const AdminReportsPage = () => {
                                 </div>
                                 <div className="mt-2 md:mt-0 flex items-center space-x-2">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${report.status === "pending" || report.status === "Under Review" ? "bg-yellow-100 text-yellow-700" :
-                                            report.status === "Resolved" ? "bg-green-100 text-green-700" :
-                                                "bg-gray-100 text-gray-700"
+                                        report.status === "Resolved" ? "bg-green-100 text-green-700" :
+                                            "bg-gray-100 text-gray-700"
                                         }`}>
                                         {report.status}
                                     </span>

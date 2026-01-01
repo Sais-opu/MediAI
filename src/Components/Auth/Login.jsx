@@ -14,7 +14,7 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const res = await axios.post("http://localhost:5001/login", { email, password });
+            const res = await axios.post("http://localhost:5000/login", { email, password });
             // Save JWT token
             localStorage.setItem("authToken", res.data.token);
             toast.success("Login successful!");
@@ -27,7 +27,7 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 md:p-10">
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -35,9 +35,9 @@ const Login = () => {
             >
                 {/* Left Side: Visual/Image */}
                 <div className="hidden md:flex md:w-1/2 bg-blue-600 relative overflow-hidden">
-                    <img 
-                        src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=2070" 
-                        alt="Medical AI" 
+                    <img
+                        src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=2070"
+                        alt="Medical AI"
                         className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay"
                     />
                     <div className="relative z-10 p-12 flex flex-col justify-between text-white">
@@ -47,7 +47,7 @@ const Login = () => {
                         </div>
                         <div>
                             <h1 className="text-4xl font-bold leading-tight mb-4">
-                                Precision Care <br /> 
+                                Precision Care <br />
                                 <span className="text-cyan-300">Powered by AI.</span>
                             </h1>
                             <p className="text-blue-100 text-lg">
@@ -103,10 +103,10 @@ const Login = () => {
                                 />
                             </div>
                         </div>
-                        <motion.button 
+                        <motion.button
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.98 }}
-                            type="submit" 
+                            type="submit"
                             className="btn bg-blue-600 hover:bg-blue-700 border-none text-white w-full h-12 rounded-xl shadow-lg shadow-blue-200 flex items-center justify-center gap-2 text-lg font-semibold"
                         >
                             Login to Dashboard
@@ -114,7 +114,7 @@ const Login = () => {
                         </motion.button>
                         <div className="text-center mt-8">
                             <p className="text-slate-500">
-                                New to the platform? 
+                                New to the platform?
                                 <Link to="/register" className="ml-2 text-blue-600 font-bold hover:underline underline-offset-4 transition-all">
                                     Create Account
                                 </Link>

@@ -18,7 +18,7 @@ const ReportModal = ({ isOpen, onClose, doctor }) => {
         setLoading(true);
         try {
             await axios.post(
-                "http://localhost:5001/api/reports/add",
+                "http://localhost:5000/api/reports/add",
                 {
                     doctorId: doctor._id,
                     reason,
@@ -107,8 +107,8 @@ const ReportModal = ({ isOpen, onClose, doctor }) => {
                             onClick={handleSubmit}
                             disabled={loading}
                             className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${loading
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-red-600 hover:bg-red-700"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-red-600 hover:bg-red-700"
                                 }`}
                         >
                             {loading ? "Submitting..." : "Submit Report"}
