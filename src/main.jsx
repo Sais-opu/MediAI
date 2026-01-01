@@ -40,6 +40,7 @@ import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointme
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 import MyAppointments from './Components/Dashboard/MyAppointments.jsx';
+import DoctorPatients from './Components/DOCTOR/DoctorPatients.jsx';
 
 const router = createBrowserRouter([
   {
@@ -144,6 +145,14 @@ const router = createBrowserRouter([
         element: (
           <Protected>
             <DoctorSchedule />
+          </Protected>
+        ),
+      },
+      {
+        path: "/doctor/patients",
+        element: (
+          <Protected>
+            <DoctorPatients />
           </Protected>
         ),
       },
