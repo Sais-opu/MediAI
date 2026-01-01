@@ -357,19 +357,54 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
 
     const endConsultation = async (outcome) => {
         try {
+            console.log("Ending consultation...", consultationData);
+
+            // Stop local tracks
+            if (localVideoTrack) {
+                localVideoTrack.stop();
+                localVideoTrack.close();
+            }
+            if (localAudioTrack) {
+                localAudioTrack.stop();
+                localAudioTrack.close();
+            }
+
+            // Leave Agora channel
+            if (client.current) {
+                await client.current.leave();
+            }
+
+            // Disconnect socket
+            if (socket) {
+                socket.disconnect();
+            }
+
             const headers = { Authorization: `Bearer ${token}` };
-            await axios.post(
-                `/consultation/${consultationData.consultationId}/end`,
-                { outcome },
-                { headers }
-            );
-            toast.success("Consultation ended successfully");
+            // Optional: Call backend to update status if consultationData exists
+            if (consultationData?.consultationId) {
+                console.log("Sending end request for ID:", consultationData.consultationId);
+                await axios.post(
+                    `/consultation/${consultationData.consultationId}/end`,
+                    { outcome },
+                    { headers }
+                );
+                console.log("End request successful");
+            } else {
+                console.warn("No consultationId found in consultationData:", consultationData);
+            }
+
+            toast.info("Consultation ended");
             onClose();
         } catch (error) {
             console.error("Error ending consultation:", error);
-            toast.error("Failed to end consultation");
+            // Show more specific error
+            const msg = error.response?.data?.message || "Failed to end call properly";
+            toast.error(msg);
+            onClose(); // Close anyway
         }
     };
+
+
 
     if (loading) {
         return (
