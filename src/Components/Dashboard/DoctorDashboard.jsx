@@ -5,14 +5,12 @@ import TodayAppointmentCard from "./DoctorFiles/TodayAppointmentCard";
 import UpcomingRow from "./DoctorFiles/UpcomingRow";
 import PatientRow from "./DoctorFiles/PatientRow";
 import StatCard from "./DoctorFiles/StatCard";
-import ScheduleForm from "./DoctorFiles/ScheduleForm";
 
 const DoctorDashboard = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState(null);
-  const [scheduleSlots, setScheduleSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -37,7 +35,6 @@ const DoctorDashboard = () => {
         setUpcomingAppointments(response.data.upcomingAppointments || []);
         setPatients(response.data.patients || []);
         setWeeklyStats(response.data.weeklyStats || null);
-        setScheduleSlots(response.data.scheduleSlots || []);
         setError(null);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
@@ -52,39 +49,6 @@ const DoctorDashboard = () => {
 
     fetchDashboardData();
   }, [token]);
-
-  const handleAddSlot = async (slot) => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.post("http://localhost:5000/doctor/schedule", slot, { headers });
-      const scheduleRes = await axios.get("http://localhost:5000/doctor/schedule", {
-        headers,
-      });
-      setScheduleSlots(scheduleRes.data || []);
-      toast.success("Schedule slot added successfully");
-    } catch (err) {
-      console.error("Error adding schedule:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to add schedule slot"
-      );
-    }
-  };
-
-  const handleDeleteSlot = async (slotId) => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:5000/doctor/schedule/${slotId}`, {
-        headers,
-      });
-      setScheduleSlots((prev) => prev.filter((s) => s._id !== slotId));
-      toast.success("Schedule slot deleted successfully");
-    } catch (err) {
-      console.error("Error deleting schedule:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to delete schedule slot"
-      );
-    }
-  };
 
   const totalDailyAppointments = useMemo(
     () =>
@@ -332,25 +296,6 @@ const DoctorDashboard = () => {
               </tbody>
             </table>
           </div>
-        </section>
-      </div>
-
-      {/* Scheduling Management */}
-      <div>
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Scheduling Management
-            </h2>
-            <span className="text-[11px] text-gray-500">
-              Availability is synced to the patient booking interface in real time.
-            </span>
-          </div>
-          <ScheduleForm
-            slots={scheduleSlots}
-            onAddSlot={handleAddSlot}
-            onDeleteSlot={handleDeleteSlot}
-          />
         </section>
       </div>
     </div>

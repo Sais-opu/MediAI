@@ -68,6 +68,7 @@ const Navbar = () => {
         if (userRole === 'doctor') {
             return [
                 { name: 'Home', path: '/' },
+                { name: 'Schedule', path: '/doctor/schedule-page' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Emergency Appointment', path: '/doctor-emergency' },
                 { name: 'Reports', path: '/doctor/reports' },

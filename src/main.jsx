@@ -38,6 +38,7 @@ import PaymentPage from './Components/Payment/PaymentPage.jsx';
 import InvoicePage from './Components/Payment/InvoicePage.jsx';import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
+import DoctorSchedulePage from './Components/Doctor/DoctorSchedulePage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -84,6 +85,13 @@ const router = createBrowserRouter([
         element: 
           <Protected>
             <DoctorEmergencyList />
+          </Protected >,
+      },
+      {
+        path: "/doctor/schedule-page",
+        element: 
+          <Protected>
+            <DoctorSchedulePage />
           </Protected >,
       },
       {
