@@ -137,7 +137,7 @@ const WaterIntakeTracker = () => {
           {/* Today's Progress */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Today's Progress</h2>
-            
+
             {/* Progress Circle */}
             <div className="flex justify-center mb-8">
               <div className="relative">
@@ -224,7 +224,7 @@ const WaterIntakeTracker = () => {
           {/* Goal Setting */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Daily Goal</h2>
-            
+
             <form onSubmit={setGoal} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

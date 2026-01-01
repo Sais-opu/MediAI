@@ -14,7 +14,7 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) =>
       <div>
         <div className="flex items-center gap-2">
           <h4 className="text-sm font-semibold text-gray-900">
-            {appt.patientName}
+            {appt.patientDetails?.fullName || appt.fullName || appt.patientName || "Unknown"}
           </h4>
           {appt.type && (
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
@@ -56,7 +56,10 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) =>
           </button>
         </div>
         <div className="flex gap-2">
-          <button className="flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors">
+          <button
+            onClick={() => onPrescriptionClick(appt)}
+            className="rounded-lg border border-gray-200 px-2 py-1 text-gray-700 hover:bg-gray-50 transition-colors"
+          >
             Prescriptions
           </button>
           <button

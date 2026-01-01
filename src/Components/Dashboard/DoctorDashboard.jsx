@@ -8,6 +8,7 @@ import ScheduleForm from "./DoctorFiles/ScheduleForm";
 import DoctorConsultation from "../Consultation/DoctorConsultation";
 import ConfirmationModal from "../Shared/ConfirmationModal";
 import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
+import PrescriptionModal from "./DoctorFiles/PrescriptionModal";
 
 const DoctorDashboard = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
@@ -22,6 +23,10 @@ const DoctorDashboard = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedAppointmentDetails, setSelectedAppointmentDetails] = useState(null);
+
+  // Prescription Modal State
+  const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const token = localStorage.getItem("authToken");
 
@@ -91,6 +96,11 @@ const DoctorDashboard = () => {
       );
     }
   };
+
+  const handlePrescriptionClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setPrescriptionModalOpen(true);
+  }
 
   const handleStartConsultation = (appointment) => {
     if (appointment.status === "Cancelled") {
@@ -286,6 +296,7 @@ const DoctorDashboard = () => {
                   appt={appt}
                   onStartCall={() => handleStartConsultation(appt)}
                   onViewDetails={() => handleViewDetails(appt)}
+                  onPrescriptionClick={handlePrescriptionClick}
                   onCancel={() => initiateCancel(appt)}
                 />
               ))
@@ -383,6 +394,12 @@ const DoctorDashboard = () => {
         }}
         appointment={selectedAppointmentDetails}
         isDoctorView={true}
+      />
+
+      <PrescriptionModal
+        isOpen={prescriptionModalOpen}
+        onClose={() => setPrescriptionModalOpen(false)}
+        appointment={selectedAppointment}
       />
     </div>
   );

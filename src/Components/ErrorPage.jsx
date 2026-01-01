@@ -1,10 +1,12 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useRouteError } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
 const ErrorPage = () => {
     const navigate = useNavigate();
+    const error = useRouteError();
+    console.error("Router Error:", error);
 
     const handleGoHome = () => {
         // Show dismissible toast
@@ -36,6 +38,9 @@ const ErrorPage = () => {
         setTimeout(() => window.location.reload(), 1000);
     };
 
+    const isNotFound = error?.status === 404;
+    const errorMessage = error?.statusText || error?.message || "Unknown error occurred";
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-base-200 p-6">
             <motion.div
@@ -49,11 +54,15 @@ const ErrorPage = () => {
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
                 >
-                    404
+                    {error?.status || "Oops!"}
                 </motion.h1>
-                <h2 className="text-2xl font-semibold mt-4">Page Not Found</h2>
+                <h2 className="text-2xl font-semibold mt-4">
+                    {isNotFound ? "Page Not Found" : "Something went wrong"}
+                </h2>
                 <p className="mt-2 text-base-content/70">
-                    The page you are looking for does not exist.
+                    {isNotFound
+                        ? "The page you are looking for does not exist."
+                        : errorMessage}
                 </p>
 
                 <div className="mt-6 flex justify-center gap-3">

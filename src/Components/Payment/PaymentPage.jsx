@@ -36,6 +36,13 @@ export default function PaymentPage() {
       // window.open(`/invoice/${res.data.paymentId}`, "_blank");
 
     } catch (err) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
       toast.error(
         err.response?.data?.error ||
         "Transaction failed. Please check your card or network."

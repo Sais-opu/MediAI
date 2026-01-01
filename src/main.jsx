@@ -42,6 +42,10 @@ import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 import MyAppointments from './Components/Dashboard/MyAppointments.jsx';
 import DoctorPatients from './Components/DOCTOR/DoctorPatients.jsx';
+import Service from './Components/Service.jsx'
+import AboutUs from './Components/About.jsx'
+import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
+import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -55,8 +59,30 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "/services",
+        element: <Service />,
+      },
+      {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
+      },
+      {
+        path: "/admin/reports",
+        element:
+          <Protected>
+            <AdminReportsPage />
+          </Protected>
+      },
+      {
+        path: "/favorites",
+        element:
+          <Protected>
+            <FavoritesPage />
+          </Protected>
       },
       {
         path: "/register",
