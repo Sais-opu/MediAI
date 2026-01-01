@@ -79,7 +79,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
 
             // Generate consultation token
             const response = await axios.post(
-                "http://localhost:5000/consultation/generate-token",
+                "http://localhost:5001/consultation/generate-token",
                 { appointmentId },
                 { headers }
             );
@@ -120,7 +120,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     };
 
     const initializeSocket = async (consultationId) => {
-        const newSocket = io("http://localhost:5000", {
+        const newSocket = io("http://localhost:5001", {
             auth: { token }
         });
 
@@ -158,7 +158,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
             // Get Agora token from backend
             const headers = { Authorization: `Bearer ${token}` };
             const tokenResponse = await axios.post(
-                "http://localhost:5000/consultation/agora-token",
+                "http://localhost:5001/consultation/agora-token",
                 { consultationId, channelName: roomId },
                 { headers }
             );
@@ -213,7 +213,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
-                `http://localhost:5000/consultation/${appointmentId}/status`,
+                `http://localhost:5001/consultation/${appointmentId}/status`,
                 { headers }
             );
 
@@ -308,7 +308,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/prescription`,
+                `http://localhost:5001/consultation/${consultationData.consultationId}/prescription`,
                 prescription,
                 { headers }
             );
@@ -323,7 +323,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/end`,
+                `http://localhost:5001/consultation/${consultationData.consultationId}/end`,
                 { outcome },
                 { headers }
             );

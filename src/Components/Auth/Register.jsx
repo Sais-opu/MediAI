@@ -16,7 +16,7 @@ const Register = () => {
         const userData = { fullName, email, password };
         try {
             const res = await axios.post(
-                "http://localhost:5000/register",
+                "http://localhost:5001/register",
                 userData,
                 { headers: { "Content-Type": "application/json" } }
             );

@@ -4,14 +4,21 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import PatientConsultation from "../Consultation/PatientConsultation";
 
+import PatientPrescriptionModal from "./PatientPrescriptionModal";
+
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
     const [upcomingAppointments, setUpcomingAppointments] = useState([]);
     const [pastAppointments, setPastAppointments] = useState([]);
     const [consultationHistory, setConsultationHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Modal States
     const [showConsultation, setShowConsultation] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+    const [showPrescription, setShowPrescription] = useState(false);
+    const [selectedPrescriptionAppt, setSelectedPrescriptionAppt] = useState(null);
+
     const [metrics, setMetrics] = useState({
         totalConsultations: 0,
         bookedConsultations: 0,
@@ -30,9 +37,11 @@ const PatientDashboard = () => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
-                "http://localhost:5000/patient/dashboard",
+                "http://localhost:5001/patient/dashboard",
                 { headers }
             );
+
+            // console.log("Dashboard Data:", response.data);
 
             const { metrics, upcomingAppointments, pastAppointments, history } = response.data;
 
@@ -51,6 +60,15 @@ const PatientDashboard = () => {
 
     const handleViewDetails = (appointmentId) => {
         toast.info("View Details functionality coming soon");
+    };
+
+    const handleViewPrescription = (appointment) => {
+        if (!appointment.prescription) {
+            toast.error("Prescription data not found");
+            return;
+        }
+        setSelectedPrescriptionAppt(appointment);
+        setShowPrescription(true);
     };
 
     const handleReschedule = (appointmentId) => {
@@ -296,6 +314,15 @@ const PatientDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
+                                        {/* View Prescription Button for Past Appointments if available */}
+                                        {appointment.prescription && (
+                                            <button
+                                                onClick={() => handleViewPrescription(appointment)}
+                                                className="btn btn-outline btn-primary btn-sm"
+                                            >
+                                                Prescription
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => handleViewDetails(appointment.id)}
                                             className="btn btn-outline btn-sm"
@@ -353,12 +380,10 @@ const PatientDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {consultation.hasPrescription && (
+                                        {/* Use explicit prescription check rather than hasPrescription flag if possible, or assume it's there */}
+                                        {(consultation.hasPrescription || consultation.prescription) && (
                                             <button
-                                                onClick={() => {
-                                                    // Open prescription view
-                                                    toast.info("Prescription view coming soon");
-                                                }}
+                                                onClick={() => handleViewPrescription(consultation)}
                                                 className="btn btn-outline btn-sm"
                                             >
                                                 View Prescription
@@ -379,10 +404,20 @@ const PatientDashboard = () => {
                     onClose={() => {
                         setShowConsultation(false);
                         setSelectedAppointmentId(null);
-                        fetchConsultationHistory(); // Refresh history after consultation
+                        fetchDashboardData();
                     }}
                 />
             )}
+
+            {/* Prescription Modal */}
+            <PatientPrescriptionModal
+                isOpen={showPrescription}
+                onClose={() => {
+                    setShowPrescription(false);
+                    setSelectedPrescriptionAppt(null);
+                }}
+                appointment={selectedPrescriptionAppt}
+            />
         </div>
     );
 };

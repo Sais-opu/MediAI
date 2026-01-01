@@ -7,7 +7,7 @@ import App from './App.jsx'
 import axios from 'axios'
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "http://localhost:5001";
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
@@ -35,11 +35,13 @@ import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
-import InvoicePage from './Components/Payment/InvoicePage.jsx';import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
+import InvoicePage from './Components/Payment/InvoicePage.jsx'; import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 import Service from './Components/Service.jsx'
 import AboutUs from './Components/About.jsx'
+import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
+import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -65,6 +67,20 @@ const router = createBrowserRouter([
         element: <AboutUs />,
       },
       {
+        path: "/admin/reports",
+        element:
+          <Protected>
+            <AdminReportsPage />
+          </Protected>
+      },
+      {
+        path: "/favorites",
+        element:
+          <Protected>
+            <FavoritesPage />
+          </Protected>
+      },
+      {
         path: "/register",
         element: <Register />,
       },
@@ -77,21 +93,21 @@ const router = createBrowserRouter([
       },
       {
         path: "/emergency-appointment",
-        element: 
+        element:
           <Protected>
             <BookEmergencyAppointment />
           </Protected >,
       },
       {
         path: "/patient-emergencies",
-        element: 
+        element:
           <Protected>
             <PatientEmergencyList />
           </Protected >,
       },
       {
         path: "/doctor-emergency",
-        element: 
+        element:
           <Protected>
             <DoctorEmergencyList />
           </Protected >,

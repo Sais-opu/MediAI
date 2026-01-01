@@ -25,7 +25,7 @@ const WaterIntakeTracker = () => {
 
   const fetchTodayData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/water/today', {
+      const response = await axios.get('http://localhost:5001/health/water/today', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTodayData(response.data);
@@ -39,7 +39,7 @@ const WaterIntakeTracker = () => {
 
   const fetchWeeklyData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/water/weekly', {
+      const response = await axios.get('http://localhost:5001/health/water/weekly', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWeeklyData(response.data);
@@ -57,7 +57,7 @@ const WaterIntakeTracker = () => {
 
     try {
       await axios.post(
-        'http://localhost:5000/health/water/goal',
+        'http://localhost:5001/health/water/goal',
         { dailyGoal: parseInt(dailyGoal) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +78,7 @@ const WaterIntakeTracker = () => {
     setLoading(true);
     try {
       await axios.post(
-        'http://localhost:5000/health/water/log',
+        'http://localhost:5001/health/water/log',
         { amount: parseInt(amount) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -96,7 +96,7 @@ const WaterIntakeTracker = () => {
   const quickAdd = async (ml) => {
     try {
       await axios.post(
-        'http://localhost:5000/health/water/log',
+        'http://localhost:5001/health/water/log',
         { amount: ml },
         { headers: { Authorization: `Bearer ${token}` } }
       );
