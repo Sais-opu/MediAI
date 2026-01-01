@@ -57,9 +57,25 @@ const PatientDashboard = () => {
         }
     };
 
-    const handleViewDetails = (appointment) => {
-        setSelectedAppointmentDetails(appointment);
-        setIsDetailsModalOpen(true);
+    const handleViewDetails = async (appointment) => {
+        try {
+            const id = appointment._id || appointment.id;
+            if (!id) {
+                setSelectedAppointmentDetails(appointment);
+                setIsDetailsModalOpen(true);
+                return;
+            }
+            const token = localStorage.getItem("authToken");
+            const headers = { Authorization: `Bearer ${token}` };
+            const response = await axios.get(`/api/appointments/${id}`, { headers });
+            setSelectedAppointmentDetails(response.data);
+            setIsDetailsModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching appointment details:", error);
+            // Fallback to what we have in the card
+            setSelectedAppointmentDetails(appointment);
+            setIsDetailsModalOpen(true);
+        }
     };
 
     const handleReschedule = (appointmentId) => {

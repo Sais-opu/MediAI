@@ -100,9 +100,25 @@ const DoctorDashboard = () => {
     setActiveConsultationId(null);
   };
 
-  const handleViewDetails = (appointment) => {
-    setSelectedAppointmentDetails(appointment);
-    setIsDetailsModalOpen(true);
+  const handleViewDetails = async (appointment) => {
+    try {
+      const id = appointment._id || appointment.id;
+      if (!id) {
+        setSelectedAppointmentDetails(appointment);
+        setIsDetailsModalOpen(true);
+        return;
+      }
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(`/api/appointments/${id}`, { headers });
+      setSelectedAppointmentDetails(response.data);
+      setIsDetailsModalOpen(true);
+    } catch (err) {
+      console.error("Error fetching appointment details:", err);
+      // Fallback to what we have in the card
+      setSelectedAppointmentDetails(appointment);
+      setIsDetailsModalOpen(true);
+    }
   };
 
   const initiateCancel = (appointment) => {
@@ -212,7 +228,7 @@ const DoctorDashboard = () => {
 
           {weeklyStats && (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <StatCard
                   label="Total"
                   value={weeklyStats.totalAppointments}
@@ -225,31 +241,7 @@ const DoctorDashboard = () => {
                   label="Weekly Rev."
                   value={weeklyStats.revenue}
                 />
-                <StatCard
-                  label="Daily Avg."
-                  value={(totalDailyAppointments / 7).toFixed(1)}
-                />
               </div>
-
-              {/* Mini Chart */}
-              {weeklyStats.dailyAppointments && (
-                <div className="mt-4">
-                  <p className="mb-2 text-[10px] font-medium text-gray-500 uppercase">Weekly Volume</p>
-                  <div className="flex items-end gap-1 rounded-lg bg-gray-50 p-2 h-20">
-                    {weeklyStats.dailyAppointments.map((d) => (
-                      <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group relative">
-                        <div className="w-full h-12 bg-white rounded flex items-end overflow-hidden">
-                          <div
-                            className="w-full bg-indigo-500/80 group-hover:bg-indigo-600 transition-all rounded-sm"
-                            style={{ height: `${Math.min((d.count / 10) * 100, 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-[8px] text-gray-400">{d.day}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </>
           )}
         </section>
