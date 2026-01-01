@@ -608,9 +608,6 @@ const BookEmergencyAppointment = () => {
                                             <Clock size={14} className="text-blue-500" />
                                             {s.start} - {s.end}
                                         </div>
-                                        <div className="mt-2 text-[10px] uppercase font-bold tracking-wider text-blue-600 bg-blue-100 inline-block px-2 py-0.5 rounded">
-                                            {s.duration} MIN SESSION
-                                        </div>
                                     </motion.div>
                                 ))}
                             </div>

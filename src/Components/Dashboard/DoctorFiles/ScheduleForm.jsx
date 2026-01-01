@@ -5,27 +5,26 @@ const ScheduleForm = ({ slots, onAddSlot, onDeleteSlot }) => {
     day: "Sunday",
     start: "09:00",
     end: "13:00",
-    duration: "30",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "duration" ? Number(value) : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.day || !form.start || !form.end || !form.duration) return;
+    if (!form.day || !form.start || !form.end) return;
     onAddSlot(form);
   };
 
   return (
     <div className="space-y-4">
       <form
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
+        className="grid grid-cols-2 gap-3 md:grid-cols-3"
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col">
@@ -74,22 +73,7 @@ const ScheduleForm = ({ slots, onAddSlot, onDeleteSlot }) => {
           />
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-xs font-medium text-gray-600">
-            Slot Duration (min)
-          </label>
-          <input
-            type="number"
-            name="duration"
-            min={5}
-            step={5}
-            value={form.duration}
-            onChange={handleChange}
-            className="mt-1 rounded-lg border border-gray-200 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div className="col-span-2 md:col-span-4">
+        <div className="col-span-2 md:col-span-3">
           <button
             type="submit"
             className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700"
@@ -117,9 +101,6 @@ const ScheduleForm = ({ slots, onAddSlot, onDeleteSlot }) => {
                 <div>
                   <span className="font-medium text-gray-800">
                     {slot.day} • {slot.start}–{slot.end}
-                  </span>
-                  <span className="ml-2 text-[11px] text-gray-500">
-                    {slot.duration} min / appointment
                   </span>
                 </div>
                 {onDeleteSlot && (
