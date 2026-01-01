@@ -38,6 +38,8 @@ import PaymentPage from './Components/Payment/PaymentPage.jsx';
 import InvoicePage from './Components/Payment/InvoicePage.jsx'; import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
+import Service from './Components/Service.jsx'
+import AboutUs from './Components/About.jsx'
 import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
 import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
 
@@ -53,8 +55,16 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "/services",
+        element: <Service />,
+      },
+      {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
       },
       {
         path: "/admin/reports",
