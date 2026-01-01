@@ -152,8 +152,9 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
 
     const initializeSocket = async (consultationId) => {
         try {
-            const newSocket = io("/", {
-                auth: { token }
+            const newSocket = io(import.meta.env.VITE_API_URL || "http://localhost:5000", {
+                auth: { token },
+                withCredentials: true
             });
 
             newSocket.on("connect", () => {
