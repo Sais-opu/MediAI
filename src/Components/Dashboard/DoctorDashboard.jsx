@@ -2,19 +2,26 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import TodayAppointmentCard from "./DoctorFiles/TodayAppointmentCard";
-import UpcomingRow from "./DoctorFiles/UpcomingRow";
-import PatientRow from "./DoctorFiles/PatientRow";
+import UpcomingAppointmentCard from "./DoctorFiles/UpcomingAppointmentCard";
 import StatCard from "./DoctorFiles/StatCard";
 import ScheduleForm from "./DoctorFiles/ScheduleForm";
+import DoctorConsultation from "../Consultation/DoctorConsultation";
+import ConfirmationModal from "../Shared/ConfirmationModal";
+import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
 
 const DoctorDashboard = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-  const [patients, setPatients] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState(null);
   const [scheduleSlots, setScheduleSlots] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null);
+  const [activeConsultationId, setActiveConsultationId] = useState(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedAppointmentDetails, setSelectedAppointmentDetails] = useState(null);
 
   const token = localStorage.getItem("authToken");
 
@@ -31,11 +38,10 @@ const DoctorDashboard = () => {
         setLoading(true);
         const headers = { Authorization: `Bearer ${token}` };
 
-        const response = await axios.get("http://localhost:5000/doctor/dashboard", { headers });
+        const response = await axios.get("/doctor/dashboard", { headers });
 
         setTodayAppointments(response.data.todayAppointments || []);
         setUpcomingAppointments(response.data.upcomingAppointments || []);
-        setPatients(response.data.patients || []);
         setWeeklyStats(response.data.weeklyStats || null);
         setScheduleSlots(response.data.scheduleSlots || []);
         setError(null);
@@ -56,8 +62,8 @@ const DoctorDashboard = () => {
   const handleAddSlot = async (slot) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.post("http://localhost:5000/doctor/schedule", slot, { headers });
-      const scheduleRes = await axios.get("http://localhost:5000/doctor/schedule", {
+      await axios.post("/doctor/schedule", slot, { headers });
+      const scheduleRes = await axios.get("/doctor/schedule", {
         headers,
       });
       setScheduleSlots(scheduleRes.data || []);
@@ -73,7 +79,7 @@ const DoctorDashboard = () => {
   const handleDeleteSlot = async (slotId) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:5000/doctor/schedule/${slotId}`, {
+      await axios.delete(`/doctor/schedule/${slotId}`, {
         headers,
       });
       setScheduleSlots((prev) => prev.filter((s) => s._id !== slotId));
@@ -83,6 +89,51 @@ const DoctorDashboard = () => {
       toast.error(
         err.response?.data?.message || "Failed to delete schedule slot"
       );
+    }
+  };
+
+  const handleStartConsultation = (appointmentId) => {
+    setActiveConsultationId(appointmentId);
+  };
+
+  const handleCloseConsultation = () => {
+    setActiveConsultationId(null);
+  };
+
+  const handleViewDetails = (appointment) => {
+    setSelectedAppointmentDetails(appointment);
+    setIsDetailsModalOpen(true);
+  };
+
+  const initiateCancel = (appointment) => {
+    setAppointmentToCancel(appointment);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!appointmentToCancel) return;
+
+    setIsCancelling(true);
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.patch(
+        `/api/cancel-appointment/${appointmentToCancel._id || appointmentToCancel.id}`,
+        { type: appointmentToCancel.type || "Normal" },
+        { headers }
+      );
+
+      toast.success("Appointment cancelled successfully");
+      setIsCancelModalOpen(false);
+      setAppointmentToCancel(null);
+      fetchDashboardData(); // Refresh list
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+      const msg = error.response?.data?.message || "Failed to cancel appointment";
+      toast.error(msg);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -136,13 +187,13 @@ const DoctorDashboard = () => {
       <div className="bg-gradient-to-r from-primary to-primary-focus text-white rounded-2xl p-6 md:p-8 shadow-lg mb-6">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Doctor Dashboard</h1>
-            <p className="text-primary-content/80">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">Doctor Dashboard</h1>
+            <p className="text-blue-50">
               Centralized view of your appointments, patients, and weekly performance.
             </p>
           </div>
           <div className="text-right mt-4 md:mt-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-primary-content/70">
+            <p className="text-xs font-medium uppercase tracking-wide text-blue-100">
               Today
             </p>
             <p className="text-sm font-semibold">{today}</p>
@@ -152,6 +203,57 @@ const DoctorDashboard = () => {
 
       {/* Top grid: Today + Weekly stats */}
       <div className="grid gap-4 lg:grid-cols-[2fr,1fr] mb-6">
+        {/* Weekly Stats Summary (Sidebar) */}
+        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-900">Weekly Performance</h2>
+            <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">Live</span>
+          </div>
+
+          {weeklyStats && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard
+                  label="Total"
+                  value={weeklyStats.totalAppointments}
+                />
+                <StatCard
+                  label="New"
+                  value={weeklyStats.newPatients}
+                />
+                <StatCard
+                  label="Weekly Rev."
+                  value={weeklyStats.revenue}
+                />
+                <StatCard
+                  label="Daily Avg."
+                  value={(totalDailyAppointments / 7).toFixed(1)}
+                />
+              </div>
+
+              {/* Mini Chart */}
+              {weeklyStats.dailyAppointments && (
+                <div className="mt-4">
+                  <p className="mb-2 text-[10px] font-medium text-gray-500 uppercase">Weekly Volume</p>
+                  <div className="flex items-end gap-1 rounded-lg bg-gray-50 p-2 h-20">
+                    {weeklyStats.dailyAppointments.map((d) => (
+                      <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group relative">
+                        <div className="w-full h-12 bg-white rounded flex items-end overflow-hidden">
+                          <div
+                            className="w-full bg-indigo-500/80 group-hover:bg-indigo-600 transition-all rounded-sm"
+                            style={{ height: `${Math.min((d.count / 10) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[8px] text-gray-400">{d.day}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
         {/* Today's Appointments */}
         <section className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between">
@@ -162,9 +264,6 @@ const DoctorDashboard = () => {
               {todayAppointments.length} appointments
             </span>
           </div>
-          <p className="text-xs text-gray-500">
-            View, manage, and start telemedicine consultations in real time.
-          </p>
           <div className="space-y-3">
             {todayAppointments.length === 0 ? (
               <p className="py-4 text-center text-sm text-gray-500">
@@ -172,81 +271,24 @@ const DoctorDashboard = () => {
               </p>
             ) : (
               todayAppointments.map((appt) => (
-                <TodayAppointmentCard key={appt._id} appt={appt} />
+                <TodayAppointmentCard
+                  key={appt._id}
+                  appt={appt}
+                  onStartCall={() => handleStartConsultation(appt._id)}
+                  onViewDetails={() => handleViewDetails(appt)}
+                  onCancel={() => initiateCancel(appt)}
+                />
               ))
             )}
           </div>
         </section>
 
-        {/* Weekly Stats */}
-        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Weekly Statistics Summary
-            </h2>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
-              This week
-            </span>
-          </div>
-
-          {weeklyStats && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard
-                  label="Total Appointments"
-                  value={weeklyStats.totalAppointments}
-                  sublabel={`${weeklyStats.completedAppointments} completed`}
-                />
-                <StatCard
-                  label="New Patients"
-                  value={weeklyStats.newPatients}
-                  sublabel="This week"
-                />
-                <StatCard
-                  label="Revenue"
-                  value={weeklyStats.revenue}
-                  sublabel="Estimated"
-                />
-                <StatCard
-                  label="Avg. per day"
-                  value={(totalDailyAppointments / 7).toFixed(1)}
-                  sublabel="Appointments"
-                />
-              </div>
-
-              {/* Simple bar chart using divs */}
-              <div className="mt-2">
-                <p className="mb-2 text-xs font-medium text-gray-600">
-                  Daily appointment volume
-                </p>
-                <div className="flex items-end gap-1 rounded-xl bg-gray-50 px-3 py-2">
-                  {weeklyStats.dailyAppointments.map((d) => (
-                    <div
-                      key={d.day}
-                      className="flex flex-1 flex-col items-center gap-1"
-                    >
-                      <div className="flex h-16 w-full items-end rounded-md bg-white">
-                        <div
-                          className="w-full rounded-md bg-indigo-500"
-                          style={{
-                            height: `${(d.count / 8) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-gray-500">
-                        {d.day}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </section>
       </div>
 
+
+
       {/* Middle grid: Upcoming + Patient list */}
-      <div className="grid gap-4 lg:grid-cols-2 mb-6">
+      <div className="grid gap-4 mb-6">
         {/* Upcoming Appointments */}
         <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-2 flex items-center justify-between">
@@ -254,83 +296,31 @@ const DoctorDashboard = () => {
               Upcoming Appointments
             </h2>
             <button className="text-xs font-medium text-indigo-600 hover:underline">
-              View all
+              View full schedule
             </button>
           </div>
           <p className="mb-3 text-xs text-gray-500">
             Plan and manage your future schedule efficiently with quick access actions.
           </p>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-xs">
-              <thead className="border-b text-[11px] uppercase tracking-wide text-gray-500">
-                <tr>
-                  <th className="px-3 py-2">Date</th>
-                  <th className="px-3 py-2">Patient</th>
-                  <th className="px-3 py-2">Time</th>
-                  <th className="px-3 py-2">Reason</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcomingAppointments.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="6"
-                      className="py-4 text-center text-sm text-gray-500"
-                    >
-                      No upcoming appointments
-                    </td>
-                  </tr>
-                ) : (
-                  upcomingAppointments.map((appt) => (
-                    <UpcomingRow key={appt._id} appt={appt} />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Patient List Summary */}
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Patient List Summary
-            </h2>
-            <button className="text-xs font-medium text-indigo-600 hover:underline">
-              View all patients
-            </button>
-          </div>
-          <p className="mb-3 text-xs text-gray-500">
-            Patients you have seen or have upcoming appointments with, with quick access to their medical history.
-          </p>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-xs">
-              <thead className="border-b text-[11px] uppercase tracking-wide text-gray-500">
-                <tr>
-                  <th className="px-3 py-2">Patient</th>
-                  <th className="px-3 py-2">Primary Concern</th>
-                  <th className="px-3 py-2">Last Visit</th>
-                  <th className="px-3 py-2">Next Visit</th>
-                  <th className="px-3 py-2 text-right">Records</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patients.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="5"
-                      className="py-4 text-center text-sm text-gray-500"
-                    >
-                      No patients found
-                    </td>
-                  </tr>
-                ) : (
-                  patients.map((p) => <PatientRow key={p._id} patient={p} />)
-                )}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {upcomingAppointments.length === 0 ? (
+              <div className="py-12 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-gray-500 text-sm">No upcoming appointments</p>
+              </div>
+            ) : (
+              upcomingAppointments.map((appt) => (
+                <UpcomingAppointmentCard
+                  key={appt._id}
+                  appt={appt}
+                  onViewDetails={() => handleViewDetails(appt)}
+                  onCancel={() => initiateCancel(appt)}
+                  onJoinConsultation={() => handleStartConsultation(appt._id)}
+                />
+              ))
+            )}
           </div>
         </section>
       </div>
@@ -353,6 +343,40 @@ const DoctorDashboard = () => {
           />
         </section>
       </div>
+
+      {/* Consultation Overlay */}
+      {activeConsultationId && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm">
+          <DoctorConsultation
+            appointmentId={activeConsultationId}
+            onClose={handleCloseConsultation}
+          />
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setAppointmentToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Appointment"
+        message="Are you sure you want to cancel this appointment? This action cannot be undone."
+        isLoading={isCancelling}
+      />
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedAppointmentDetails(null);
+        }}
+        appointment={selectedAppointmentDetails}
+        isDoctorView={true}
+      />
     </div>
   );
 };

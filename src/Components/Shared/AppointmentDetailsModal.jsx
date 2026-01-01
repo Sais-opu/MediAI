@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AppointmentDetailsModal = ({ isOpen, onClose, appointment }) => {
+const AppointmentDetailsModal = ({ isOpen, onClose, appointment, isDoctorView = false }) => {
     if (!isOpen || !appointment) return null;
 
     // Helper to format date
@@ -42,16 +42,21 @@ const AppointmentDetailsModal = ({ isOpen, onClose, appointment }) => {
                 {/* Body */}
                 <div className="p-6 space-y-4">
 
-                    {/* Doctor Info */}
+                    {/* Participant Info */}
                     <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
                         <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl font-bold">
-                            {appointment.doctorName ? appointment.doctorName.charAt(0) : "D"}
+                            {(isDoctorView ? (appointment.patientName || "P") : (appointment.doctorName || "D")).charAt(0)}
                         </div>
                         <div>
-                            <h4 className="text-lg font-bold text-gray-800">{appointment.doctorName || "Unknown Doctor"}</h4>
+                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">
+                                {isDoctorView ? "Patient" : "Doctor"}
+                            </p>
+                            <h4 className="text-lg font-bold text-gray-800">
+                                {isDoctorView ? (appointment.patientName || "Unknown Patient") : (appointment.doctorName || "Unknown Doctor")}
+                            </h4>
                             <div className="flex flex-wrap gap-2 mt-1">
-                                {appointment.specialization !== 'Emergency' && (
-                                    <span className="badge badge-outline">{appointment.specialization || "General"}</span>
+                                {!isDoctorView && appointment.specialization && appointment.specialization !== 'Emergency' && (
+                                    <span className="badge badge-outline">{appointment.specialization}</span>
                                 )}
                                 {appointment.type === 'Emergency' && (
                                     <span className="badge badge-error text-white">Emergency</span>
