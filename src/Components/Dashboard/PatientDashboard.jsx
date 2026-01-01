@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import PatientConsultation from "../Consultation/PatientConsultation";
@@ -8,6 +9,7 @@ import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
 
 const PatientDashboard = () => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [upcomingAppointments, setUpcomingAppointments] = useState([]);
     const [todayAppointments, setTodayAppointments] = useState([]);
     // pastAppointments and consultationHistory moved to MyAppointments
@@ -82,6 +84,21 @@ const PatientDashboard = () => {
 
     const handleReschedule = (appointmentId) => {
         toast.info("Reschedule functionality coming soon");
+    };
+
+    const handlePaymentStatusClick = (appointment) => {
+        if (appointment.paymentStatus?.toLowerCase() === "paid") {
+            if (appointment.paymentId) {
+                navigate(`/invoice/${appointment.paymentId}`);
+            } else {
+                toast.info("Invoice detail not found. It might be an older record.");
+            }
+        } else {
+            // Redirect to payment
+            const amount = appointment.amount || 0;
+            const type = appointment.type?.toLowerCase() === "emergency" ? "emergency" : "normal";
+            navigate(`/payment/${appointment.id}/${amount}?type=${type}`);
+        }
     };
 
     const initiateCancel = (appointment) => {
@@ -264,7 +281,10 @@ const PatientDashboard = () => {
                                                         <span>{appointment.appointmentTime}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <span className={`badge ${appointment.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
+                                                        <span
+                                                            onClick={() => handlePaymentStatusClick(appointment)}
+                                                            className={`badge cursor-pointer hover:opacity-80 transition-opacity ${appointment.paymentStatus?.toLowerCase() === 'paid' ? 'badge-success' : 'badge-warning'}`}
+                                                        >
                                                             {appointment.paymentStatus}
                                                         </span>
                                                     </div>
@@ -359,7 +379,10 @@ const PatientDashboard = () => {
                                                         <span>{appointment.appointmentTime}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <span className={`badge ${appointment.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
+                                                        <span
+                                                            onClick={() => handlePaymentStatusClick(appointment)}
+                                                            className={`badge cursor-pointer hover:opacity-80 transition-opacity ${appointment.paymentStatus?.toLowerCase() === 'paid' ? 'badge-success' : 'badge-warning'}`}
+                                                        >
                                                             {appointment.paymentStatus}
                                                         </span>
                                                     </div>
