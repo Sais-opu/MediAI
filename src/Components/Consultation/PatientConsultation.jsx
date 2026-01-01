@@ -260,6 +260,53 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
         }
     };
 
+    const submitRating = async () => {
+        try {
+            if (!rating || rating < 1 || rating > 5) {
+                toast.error("Please select a rating");
+                return;
+            }
+
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.post(
+                `http://localhost:5000/consultation/${consultationData.consultationId}/rating`,
+                { rating, comment: ratingComment },
+                { headers }
+            );
+            toast.success("Thank you for your feedback!");
+        } catch (error) {
+            console.error("Error submitting rating:", error);
+            toast.error("Failed to submit rating");
+        }
+    };
+
+    const downloadPrescription = () => {
+        if (!prescription) return;
+
+        const content = `
+PRESCRIPTION
+Date: ${new Date(prescription.createdAt).toLocaleDateString()}
+
+MEDICATIONS:
+${prescription.medications.map((med, i) =>
+            `${i + 1}. ${med.name} - ${med.dosage}, ${med.frequency}, ${med.duration}`
+        ).join('\n')}
+
+INSTRUCTIONS:
+${prescription.instructions}
+
+${prescription.followUp ? `Follow-up Date: ${prescription.followUpDate}` : ''}
+    `;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prescription_${consultationData.consultationId}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     if (showChecklist) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
