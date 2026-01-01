@@ -71,10 +71,19 @@ const AppointmentDetailsModal = ({ isOpen, onClose, appointment }) => {
                                 <div>
                                     <h5 className="text-sm font-semibold text-gray-700 mb-1">Status</h5>
                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold 
-                                        ${appointment.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                            appointment.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                                                'bg-yellow-100 text-yellow-700'}`}>
+                                        ${appointment.status?.toLowerCase() === 'completed' ? 'bg-green-100 text-green-700' :
+                                            appointment.status?.toLowerCase() === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                                                appointment.status?.toLowerCase() === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'}`}>
                                         {appointment.status || "Pending"}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <h5 className="text-sm font-semibold text-gray-700 mb-1">Payment Status</h5>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                                        ${appointment.paymentStatus?.toLowerCase() === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {appointment.paymentStatus || "Unpaid"}
                                     </span>
                                 </div>
 

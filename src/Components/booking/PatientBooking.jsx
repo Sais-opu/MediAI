@@ -148,7 +148,7 @@ export default function PatientBooking() {
     } catch (error) {
       const message = error.response?.data?.message || "Error booking the appointment. Please try again.";
 
-      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (error.response && (error.response.status === 401 || (error.response.status === 403 && message.toLowerCase().includes("session")))) {
         toast.error("Session expired. Please login again.");
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
