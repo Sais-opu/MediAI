@@ -6,6 +6,8 @@ import UpcomingRow from "./DoctorFiles/UpcomingRow";
 import PatientRow from "./DoctorFiles/PatientRow";
 import StatCard from "./DoctorFiles/StatCard";
 import ScheduleForm from "./DoctorFiles/ScheduleForm";
+import PrescriptionModal from "./DoctorFiles/PrescriptionModal";
+import AppointmentDetailsModal from "./DoctorFiles/AppointmentDetailsModal";
 
 const DoctorDashboard = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
@@ -15,6 +17,14 @@ const DoctorDashboard = () => {
   const [scheduleSlots, setScheduleSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Prescription Modal State
+  const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  // Details Modal State
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [viewDetailsAppointment, setViewDetailsAppointment] = useState(null);
 
   const token = localStorage.getItem("authToken");
 
@@ -84,6 +94,16 @@ const DoctorDashboard = () => {
         err.response?.data?.message || "Failed to delete schedule slot"
       );
     }
+  };
+
+  const handlePrescriptionClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setPrescriptionModalOpen(true);
+  };
+
+  const handleViewDetails = (appointment) => {
+    setViewDetailsAppointment(appointment);
+    setDetailsModalOpen(true);
   };
 
   const totalDailyAppointments = useMemo(
@@ -172,7 +192,12 @@ const DoctorDashboard = () => {
               </p>
             ) : (
               todayAppointments.map((appt) => (
-                <TodayAppointmentCard key={appt._id} appt={appt} />
+                <TodayAppointmentCard
+                  key={appt._id}
+                  appt={appt}
+                  onPrescriptionClick={handlePrescriptionClick}
+                  onViewDetails={handleViewDetails}
+                />
               ))
             )}
           </div>
@@ -284,7 +309,7 @@ const DoctorDashboard = () => {
                   </tr>
                 ) : (
                   upcomingAppointments.map((appt) => (
-                    <UpcomingRow key={appt._id} appt={appt} />
+                    <UpcomingRow key={appt._id} appt={appt} onViewDetails={handleViewDetails} />
                   ))
                 )}
               </tbody>
@@ -353,6 +378,18 @@ const DoctorDashboard = () => {
           />
         </section>
       </div>
+
+      <PrescriptionModal
+        isOpen={prescriptionModalOpen}
+        onClose={() => setPrescriptionModalOpen(false)}
+        appointment={selectedAppointment}
+      />
+
+      <AppointmentDetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        appointment={viewDetailsAppointment}
+      />
     </div>
   );
 };
