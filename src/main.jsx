@@ -6,8 +6,9 @@ import './index.css'
 import App from './App.jsx'
 import axios from 'axios'
 
+// Check if we are in production; otherwise, use localhost
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:5000";
 
 import { createBrowserRouter } from 'react-router-dom'
 import ErrorPage from './Components/ErrorPage.jsx'
