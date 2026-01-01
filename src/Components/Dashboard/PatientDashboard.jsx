@@ -82,9 +82,6 @@ const PatientDashboard = () => {
         }
     };
 
-    const handleReschedule = (appointmentId) => {
-        toast.info("Reschedule functionality coming soon");
-    };
 
     const handlePaymentStatusClick = (appointment) => {
         if (appointment.paymentStatus?.toLowerCase() === "paid") {
@@ -435,12 +432,6 @@ const PatientDashboard = () => {
                                             className="btn btn-outline btn-sm"
                                         >
                                             View Details
-                                        </button>
-                                        <button
-                                            onClick={() => handleReschedule(appointment.id)}
-                                            className="btn btn-outline btn-sm"
-                                        >
-                                            Reschedule
                                         </button>
                                         <button
                                             onClick={() => initiateCancel(appointment)}

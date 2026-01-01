@@ -88,9 +88,6 @@ const UpcomingAppointmentCard = ({ appt, onViewDetails, onCancel, onJoinConsulta
                     >
                         View Details
                     </button>
-                    <button className="btn btn-ghost btn-sm text-red-600 hover:bg-red-50 hover:text-red-700 normal-case font-medium">
-                        Reschedule
-                    </button>
                     <button
                         onClick={onCancel}
                         className="btn btn-error btn-sm text-white normal-case font-medium shadow-sm"
