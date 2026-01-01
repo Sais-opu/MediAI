@@ -2,7 +2,13 @@ import React from "react";
 import StatusBadge from "./StatusBadge";
 
 const UpcomingAppointmentCard = ({ appt, onViewDetails, onCancel, onJoinConsultation }) => {
-    const isTelemedicine = appt.consultationType === 'online' || appt.consultationType === 'telemedicine';
+    const isTelemedicine =
+        appt.consultationType?.toLowerCase() === 'online' ||
+        appt.consultationType?.toLowerCase() === 'telemedicine' ||
+        appt.medium?.toLowerCase() === 'online' ||
+        appt.medium?.toLowerCase() === 'telemedicine' ||
+        appt.meetingType?.toLowerCase() === 'online' ||
+        appt.meetingType?.toLowerCase() === 'telemedicine';
     return (
         <div className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -59,6 +65,17 @@ const UpcomingAppointmentCard = ({ appt, onViewDetails, onCancel, onJoinConsulta
                 </div>
 
                 <div className="flex flex-wrap gap-2 md:self-center">
+                    {isTelemedicine && (
+                        <button
+                            onClick={onJoinConsultation}
+                            className="btn btn-primary btn-sm flex items-center gap-1 normal-case font-medium shadow-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Join Consultation
+                        </button>
+                    )}
                     <button
                         onClick={onViewDetails}
                         className="btn btn-outline btn-sm normal-case font-medium border-gray-200 hover:bg-gray-50 hover:text-gray-900"
@@ -74,17 +91,6 @@ const UpcomingAppointmentCard = ({ appt, onViewDetails, onCancel, onJoinConsulta
                     >
                         Cancel
                     </button>
-                    {isTelemedicine && (
-                        <button
-                            onClick={onJoinConsultation}
-                            className="btn btn-primary btn-sm flex items-center gap-1 normal-case font-medium shadow-sm"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            Join Consultation
-                        </button>
-                    )}
                 </div>
             </div>
         </div>

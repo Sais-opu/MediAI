@@ -295,9 +295,6 @@ const DoctorDashboard = () => {
             <h2 className="text-sm font-semibold text-gray-900">
               Upcoming Appointments
             </h2>
-            <button className="text-xs font-medium text-indigo-600 hover:underline">
-              View full schedule
-            </button>
           </div>
           <p className="mb-3 text-xs text-gray-500">
             Plan and manage your future schedule efficiently with quick access actions.
