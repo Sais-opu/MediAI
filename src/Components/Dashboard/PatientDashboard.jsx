@@ -222,8 +222,8 @@ const PatientDashboard = () => {
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600 mb-1">Booked Consultations</p>
-                            <p className="text-3xl font-bold text-gray-800">{metrics.bookedConsultations}</p>
+                            <p className="text-sm text-gray-600 mb-1">Upcoming Today</p>
+                            <p className="text-3xl font-bold text-gray-800">{todayAppointments.length}</p>
                         </div>
                         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,11 +252,6 @@ const PatientDashboard = () => {
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">Today's Appointments</h2>
-                    {todayAppointments.length > 0 && (
-                        <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                            Live Sessions
-                        </span>
-                    )}
                 </div>
 
                 {todayAppointments.length === 0 ? (
