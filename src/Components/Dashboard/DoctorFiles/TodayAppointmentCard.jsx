@@ -37,20 +37,18 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescription
       </div>
       <div className="flex flex-row gap-2 text-xs">
         <div className="flex gap-2">
-          <button
-            onClick={onStartCall}
-            disabled={!isTelemedicine}
-            className={`flex-1 rounded-lg px-2 py-1.5 font-medium text-white transition-colors ${isTelemedicine
-              ? "bg-indigo-600 hover:bg-indigo-700"
-              : "bg-gray-300 cursor-not-allowed"
-              }`}
-            title={!isTelemedicine ? "Only for telemedicine consultations" : "Join Consultation"}
-          >
-            {isTelemedicine ? "Join Consultation" : "Physical"}
-          </button>
+          {isTelemedicine && (
+            <button
+              onClick={onStartCall}
+              className="flex-1 rounded-lg px-2 py-1.5 font-medium text-white transition-colors bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+              title="Join Consultation"
+            >
+              Join Consultation
+            </button>
+          )}
           <button
             onClick={onViewDetails}
-            className="flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             View Details
           </button>
@@ -58,13 +56,13 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescription
         <div className="flex gap-2">
           <button
             onClick={() => onPrescriptionClick(appt)}
-            className="rounded-lg border border-gray-200 px-2 py-1 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="rounded-lg border border-gray-200 px-2 py-1 text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             Prescriptions
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 rounded-lg border border-red-100 px-2 py-1.5 text-red-600 hover:bg-red-50 transition-colors"
+            className="flex-1 rounded-lg border border-red-100 px-2 py-1.5 text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
           >
             Cancel
           </button>
