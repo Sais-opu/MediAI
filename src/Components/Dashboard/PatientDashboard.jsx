@@ -126,7 +126,15 @@ const PatientDashboard = () => {
             return;
         }
 
-        if (appointment.consultationType !== "online" && appointment.consultationType !== "telemedicine") {
+        const isTelemedicine =
+            appointment.consultationType?.toLowerCase() === "online" ||
+            appointment.consultationType?.toLowerCase() === "telemedicine" ||
+            appointment.medium?.toLowerCase() === "online" ||
+            appointment.medium?.toLowerCase() === "telemedicine" ||
+            appointment.meetingType?.toLowerCase() === "online" ||
+            appointment.meetingType?.toLowerCase() === "telemedicine";
+
+        if (!isTelemedicine) {
             toast.error("This is not an online consultation");
             return;
         }

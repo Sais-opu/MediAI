@@ -92,8 +92,26 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleStartConsultation = (appointmentId) => {
-    setActiveConsultationId(appointmentId);
+  const handleStartConsultation = (appointment) => {
+    if (appointment.status === "Cancelled") {
+      toast.error("This appointment has been cancelled");
+      return;
+    }
+
+    const isTelemedicine =
+      appointment.consultationType?.toLowerCase() === "online" ||
+      appointment.consultationType?.toLowerCase() === "telemedicine" ||
+      appointment.medium?.toLowerCase() === "online" ||
+      appointment.medium?.toLowerCase() === "telemedicine" ||
+      appointment.meetingType?.toLowerCase() === "online" ||
+      appointment.meetingType?.toLowerCase() === "telemedicine";
+
+    if (!isTelemedicine) {
+      toast.error("This is not an online consultation");
+      return;
+    }
+
+    setActiveConsultationId(appointment._id || appointment.id);
   };
 
   const handleCloseConsultation = () => {
@@ -266,7 +284,7 @@ const DoctorDashboard = () => {
                 <TodayAppointmentCard
                   key={appt._id}
                   appt={appt}
-                  onStartCall={() => handleStartConsultation(appt._id)}
+                  onStartCall={() => handleStartConsultation(appt)}
                   onViewDetails={() => handleViewDetails(appt)}
                   onCancel={() => initiateCancel(appt)}
                 />
@@ -306,7 +324,7 @@ const DoctorDashboard = () => {
                   appt={appt}
                   onViewDetails={() => handleViewDetails(appt)}
                   onCancel={() => initiateCancel(appt)}
-                  onJoinConsultation={() => handleStartConsultation(appt._id)}
+                  onJoinConsultation={() => handleStartConsultation(appt)}
                 />
               ))
             )}
