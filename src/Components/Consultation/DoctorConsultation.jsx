@@ -17,12 +17,11 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
-
-    // Agora states
-    const [agoraClient, setAgoraClient] = useState(null);
     const [localVideoTrack, setLocalVideoTrack] = useState(null);
     const [localAudioTrack, setLocalAudioTrack] = useState(null);
-    const [remoteUsers, setRemoteUsers] = useState([]);
+
+    // Agora states
+    const client = useRef(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
 
@@ -63,8 +62,8 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
             localAudioTrack.stop();
             localAudioTrack.close();
         }
-        if (agoraClient) {
-            await agoraClient.leave();
+        if (client.current) {
+            await client.current.leave();
         }
         // Cleanup Socket
         if (socket) {
@@ -79,30 +78,57 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
 
             // Generate consultation token
             const response = await axios.post(
-                "http://localhost:5000/consultation/generate-token",
+                "/consultation/generate-token",
                 { appointmentId },
                 { headers }
             );
 
+            const { agoraAppId, agoraToken, channelName, uid } = response.data;
             setConsultationData(response.data);
-            setSessionStatus(response.data.sessionStatus);
-            setPatientJoined(response.data.patientJoined);
+
+            // Fetch patient profile
+            await fetchPatientProfile(response.data.appointment);
+
+            // Initialize Agora
+            await client.current.join(agoraAppId, channelName, agoraToken, uid);
+
+            // Create and publish tracks
+            const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+
+            setLocalAudioTrack(audioTrack);
+            setLocalVideoTrack(videoTrack);
+
+            await client.current.publish([audioTrack, videoTrack]);
+
+            if (localVideoRef.current) {
+                videoTrack.play(localVideoRef.current);
+            }
+
+            // Handle remote users
+            client.current.on("user-published", async (user, mediaType) => {
+                await client.current.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    setPatientJoined(true);
+                    if (remoteVideoRef.current) {
+                        user.videoTrack.play(remoteVideoRef.current);
+                    }
+                }
+                if (mediaType === "audio") {
+                    user.audioTrack.play();
+                }
+            });
+
+            client.current.on("user-unpublished", (user) => {
+                if (user.uid !== client.current.uid) {
+                    setPatientJoined(false);
+                }
+            });
 
             // Initialize Socket.io
             await initializeSocket(response.data.consultationId);
 
-            // Initialize Agora video
-            await initializeAgora(response.data.consultationId, response.data.roomId);
-
-            // Fetch patient profile
-            await fetchPatientProfile();
-
-            // Poll for patient join status
-            const pollInterval = setInterval(async () => {
-                await checkConsultationStatus();
-            }, 3000);
-
-            return () => clearInterval(pollInterval);
+            // Fetch prescription if available
+            await fetchPrescription();
 
         } catch (error) {
             console.error("Error initializing consultation:", error);
@@ -120,7 +146,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
     };
 
     const initializeSocket = async (consultationId) => {
-        const newSocket = io("http://localhost:5000", {
+        const newSocket = io("/", {
             auth: { token }
         });
 
@@ -153,59 +179,19 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         setSocket(newSocket);
     };
 
-    const initializeAgora = async (consultationId, roomId) => {
+    const fetchPrescription = async () => {
         try {
-            // Get Agora token from backend
-            const headers = { Authorization: `Bearer ${token}` };
-            const tokenResponse = await axios.post(
-                "http://localhost:5000/consultation/agora-token",
-                { consultationId, channelName: roomId },
-                { headers }
-            );
-
-            const { token: agoraToken, appId, channelName, uid } = tokenResponse.data;
-
-            // Create Agora client
-            const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-            setAgoraClient(client);
-
-            // Set up event handlers
-            client.on("user-published", async (user, mediaType) => {
-                await client.subscribe(user, mediaType);
-                if (mediaType === "video") {
-                    setRemoteUsers(prev => [...prev, user]);
-                    if (remoteVideoRef.current) {
-                        user.videoTrack.play(remoteVideoRef.current);
-                    }
-                }
-                if (mediaType === "audio") {
-                    user.audioTrack.play();
-                }
-            });
-
-            client.on("user-unpublished", (user) => {
-                setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
-            });
-
-            // Join channel
-            await client.join(appId, channelName, agoraToken, uid);
-
-            // Create and publish local tracks
-            const videoTrack = await AgoraRTC.createCameraVideoTrack();
-            const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-
-            setLocalVideoTrack(videoTrack);
-            setLocalAudioTrack(audioTrack);
-
-            if (localVideoRef.current) {
-                videoTrack.play(localVideoRef.current);
+            if (consultationData?.consultationId) {
+                const headers = { Authorization: `Bearer ${token}` };
+                const response = await axios.get(
+                    `/consultation/${consultationData.consultationId}/prescription`,
+                    { headers }
+                );
+                setPrescription(response.data);
             }
-
-            await client.publish([videoTrack, audioTrack]);
-
         } catch (error) {
-            console.error("Error initializing Agora:", error);
-            toast.error("Could not initialize video. Please check your Agora credentials.");
+            // Prescription might not exist yet
+            console.log("Prescription not available yet");
         }
     };
 
@@ -213,7 +199,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
-                `http://localhost:5000/consultation/${appointmentId}/status`,
+                `/consultation/${appointmentId}/status`,
                 { headers }
             );
 
@@ -226,10 +212,12 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         }
     };
 
-    const fetchPatientProfile = async () => {
+    const fetchPatientProfile = async (appointment) => {
         try {
+            const data = appointment || consultationData?.appointment;
             setPatientProfile({
-                name: consultationData?.appointment?.patientName || "Patient",
+                name: data?.patientName || "Patient",
+                condition: data?.reason || "N/A"
             });
         } catch (error) {
             console.error("Error fetching patient profile:", error);
@@ -254,8 +242,8 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             if (!isScreenSharing) {
                 const screenTrack = await AgoraRTC.createScreenVideoTrack();
-                await agoraClient.unpublish(localVideoTrack);
-                await agoraClient.publish(screenTrack);
+                await client.current.unpublish(localVideoTrack);
+                await client.current.publish(screenTrack);
                 if (localVideoRef.current) {
                     screenTrack.play(localVideoRef.current);
                 }
@@ -263,8 +251,8 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
                 setLocalVideoTrack(screenTrack);
             } else {
                 const videoTrack = await AgoraRTC.createCameraVideoTrack();
-                await agoraClient.unpublish(localVideoTrack);
-                await agoraClient.publish(videoTrack);
+                await client.current.unpublish(localVideoTrack);
+                await client.current.publish(videoTrack);
                 if (localVideoRef.current) {
                     videoTrack.play(localVideoRef.current);
                 }
@@ -308,7 +296,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/prescription`,
+                `/consultation/${consultationData.consultationId}/prescription`,
                 prescription,
                 { headers }
             );
@@ -323,7 +311,7 @@ const DoctorConsultation = ({ appointmentId, onClose }) => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/end`,
+                `/consultation/${consultationData.consultationId}/end`,
                 { outcome },
                 { headers }
             );

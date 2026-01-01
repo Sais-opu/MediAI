@@ -19,10 +19,14 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
     // Video/Audio states
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+    const [localVideoTrack, setLocalVideoTrack] = useState(null);
+    const [localAudioTrack, setLocalAudioTrack] = useState(null);
+    const client = useRef(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
 
     // Chat states
+    const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
 
@@ -41,10 +45,20 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
             initializeConsultation();
         }
         return () => {
-            if (localVideoRef.current?.srcObject) {
-                localVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            if (localVideoTrack) {
+                localVideoTrack.close();
+            }
+            if (localAudioTrack) {
+                localAudioTrack.close();
+            }
+            if (client.current) {
+                client.current.leave();
+            }
+            if (socket) {
+                socket.disconnect();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appointmentId, showPreCallChecklist]);
 
     const runPreCallChecklist = async () => {
@@ -116,13 +130,44 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
                 { headers }
             );
 
+            const { agoraAppId, agoraToken, channelName, uid } = response.data;
             setConsultationData(response.data);
 
-            // Initialize video
-            await initializeVideo();
-
             // Fetch doctor profile
-            await fetchDoctorProfile();
+            await fetchDoctorProfile(response.data.appointment);
+
+            // Initialize Agora
+            await client.current.join(agoraAppId, channelName, agoraToken, uid);
+
+            // Create and publish tracks
+            const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+
+            setLocalAudioTrack(audioTrack);
+            setLocalVideoTrack(videoTrack);
+
+            await client.current.publish([audioTrack, videoTrack]);
+
+            if (localVideoRef.current) {
+                videoTrack.play(localVideoRef.current);
+            }
+
+            // Handle remote users
+            client.current.on("user-published", async (user, mediaType) => {
+                await client.current.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    if (remoteVideoRef.current) {
+                        // Agora plays by creating elements, but we can direct it to a container
+                        // Or we can let Agora handle the DOM. For simplicity in this structure:
+                        user.videoTrack.play(remoteVideoRef.current);
+                    }
+                }
+                if (mediaType === "audio") {
+                    user.audioTrack.play();
+                }
+            });
+
+            // Initialize Socket.io
+            await initializeSocket(response.data.consultationId);
 
             // Fetch prescription if available
             await fetchPrescription();
@@ -142,29 +187,46 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
         }
     };
 
-    const initializeVideo = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: isVideoEnabled,
-                audio: isAudioEnabled
-            });
+    const initializeSocket = async (consultationId) => {
+        const newSocket = io("/", {
+            auth: { token }
+        });
 
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = stream;
-            }
-        } catch (error) {
-            console.error("Error accessing media devices:", error);
-            toast.error("Could not access camera/microphone");
-        }
+        newSocket.on("connect", () => {
+            console.log("Socket connected");
+            const userId = JSON.parse(atob(token.split('.')[1])).id;
+            newSocket.emit("join-consultation", {
+                consultationId,
+                userId,
+                role: "patient"
+            });
+        });
+
+        newSocket.on("receive-message", (data) => {
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                text: data.message,
+                sender: data.role === "doctor" ? "doctor" : "patient",
+                timestamp: data.timestamp
+            }]);
+        });
+
+        setSocket(newSocket);
     };
 
-    const fetchDoctorProfile = async () => {
+    const initializeVideo = async () => {
+        // This is now handled in initializeConsultation with AgoraRTC
+    };
+
+    const fetchDoctorProfile = async (appointment) => {
         try {
-            // Fetch doctor profile from consultation data
-            setDoctorProfile({
-                name: "Dr. Smith", // This would come from API
-                specialization: "Cardiologist"
-            });
+            const data = appointment || consultationData?.appointment;
+            if (data) {
+                setDoctorProfile({
+                    name: data.doctorName || "Doctor",
+                    specialization: data.specialization || "General"
+                });
+            }
         } catch (error) {
             console.error("Error fetching doctor profile:", error);
         }
