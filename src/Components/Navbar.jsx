@@ -49,7 +49,7 @@ const Navbar = () => {
                 { name: 'Home', path: '/' },
                 { name: 'Doctors', path: '/doctorCard' },
                 { name: 'Services', path: '/services' },
-                // { name: 'About Us', path: '/about' },
+                { name: 'About Us', path: '/about' },
                 // { name: 'Contact', path: '/contact' },
             ];
         }

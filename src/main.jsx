@@ -39,6 +39,7 @@ import InvoicePage from './Components/Payment/InvoicePage.jsx';import BookEmerge
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 import Service from './Components/Service.jsx'
+import AboutUs from './Components/About.jsx'
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
       },
       {
         path: "/register",
