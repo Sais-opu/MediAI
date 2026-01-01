@@ -108,8 +108,8 @@ const DoctorDashboard = () => {
         setIsDetailsModalOpen(true);
         return;
       }
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const authToken = localStorage.getItem("authToken");
+      const headers = { Authorization: `Bearer ${authToken}` };
       const response = await axios.get(`/api/appointments/${id}`, { headers });
       setSelectedAppointmentDetails(response.data);
       setIsDetailsModalOpen(true);
