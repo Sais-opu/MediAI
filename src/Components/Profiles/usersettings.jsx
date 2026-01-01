@@ -95,14 +95,14 @@ const UserSettings = () => {
                 }
 
                 try {
-                    response = await axios.get(`http://localhost:5000/api/user/${targetId}`, {
+                    response = await axios.get(`http://localhost:5001/api/user/${targetId}`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
                 } catch (profileError) {
                     // Fallback to self-profile endpoint
-                    response = await axios.get(`http://localhost:5000/users/profile`, {
+                    response = await axios.get(`http://localhost:5001/users/profile`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -259,7 +259,7 @@ const UserSettings = () => {
                 formDataToSend.append('bio', formData.bio || "");
             }
 
-            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            const response = await axios.put(`http://localhost:5001/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -329,7 +329,7 @@ const UserSettings = () => {
             console.log("Sending update request with token:", token ? "Token present" : "No token");
             console.log("User ID:", userId);
 
-            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            const response = await axios.put(`http://localhost:5001/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -398,7 +398,7 @@ const UserSettings = () => {
 
         try {
             const token = localStorage.getItem("authToken");
-            const res = await axios.put(`http://localhost:5000/api/user/change-password/${userId}`, {
+            const res = await axios.put(`http://localhost:5001/api/user/change-password/${userId}`, {
                 currentPassword: passData.currentPassword,
                 newPassword: passData.newPassword
             }, {
