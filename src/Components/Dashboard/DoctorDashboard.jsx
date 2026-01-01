@@ -262,8 +262,8 @@ const DoctorDashboard = () => {
                   value={weeklyStats.totalAppointments}
                 />
                 <StatCard
-                  label="New"
-                  value={weeklyStats.newPatients}
+                  label="Today"
+                  value={todayAppointments.length}
                 />
                 <StatCard
                   label="Weekly Rev."
@@ -280,9 +280,6 @@ const DoctorDashboard = () => {
             <h2 className="text-sm font-semibold text-gray-900">
               Today&apos;s Appointments
             </h2>
-            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-              {todayAppointments.length} appointments
-            </span>
           </div>
           <div className="space-y-3">
             {todayAppointments.length === 0 ? (
