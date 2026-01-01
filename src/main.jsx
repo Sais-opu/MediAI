@@ -19,6 +19,7 @@ import DoctorCard from './Components/Doctor/DoctorCard.jsx';
 import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointment.jsx';
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
+import Service from './Components/Service.jsx'
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/services",
+        element: <Service />,
       },
       {
         path: "/login",
