@@ -434,7 +434,7 @@ const BookEmergencyAppointment = () => {
         }
         setLoading(true);
         try {
-            await axios.post(
+            const res = await axios.post(
                 "http://localhost:5000/emergency/book",
                 {
                     doctorId: doctor._id,
