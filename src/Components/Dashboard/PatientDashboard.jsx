@@ -37,7 +37,7 @@ const PatientDashboard = () => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
-                "http://localhost:5001/patient/dashboard",
+                "http://localhost:5000/patient/dashboard",
                 { headers }
             );
 

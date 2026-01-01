@@ -15,7 +15,7 @@ export default function InvoicePage() {
   const loadInvoice = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/api/transactions/${paymentId}`,
+        `http://localhost:5000/api/transactions/${paymentId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -31,7 +31,7 @@ export default function InvoicePage() {
   };
 
   const downloadPDF = () => {
-    window.open(`http://localhost:5001/invoices/invoice-${paymentId}.pdf`, "_blank");
+    window.open(`http://localhost:5000/invoices/invoice-${paymentId}.pdf`, "_blank");
   };
 
   if (loading) return <div className="text-center p-10">Loading invoice...</div>;

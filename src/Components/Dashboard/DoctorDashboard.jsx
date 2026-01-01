@@ -41,7 +41,7 @@ const DoctorDashboard = () => {
         setLoading(true);
         const headers = { Authorization: `Bearer ${token}` };
 
-        const response = await axios.get("http://localhost:5001/doctor/dashboard", { headers });
+        const response = await axios.get("http://localhost:5000/doctor/dashboard", { headers });
 
         setTodayAppointments(response.data.todayAppointments || []);
         setUpcomingAppointments(response.data.upcomingAppointments || []);
@@ -66,8 +66,8 @@ const DoctorDashboard = () => {
   const handleAddSlot = async (slot) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.post("http://localhost:5001/doctor/schedule", slot, { headers });
-      const scheduleRes = await axios.get("http://localhost:5001/doctor/schedule", {
+      await axios.post("http://localhost:5000/doctor/schedule", slot, { headers });
+      const scheduleRes = await axios.get("http://localhost:5000/doctor/schedule", {
         headers,
       });
       setScheduleSlots(scheduleRes.data || []);
@@ -83,7 +83,7 @@ const DoctorDashboard = () => {
   const handleDeleteSlot = async (slotId) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:5001/doctor/schedule/${slotId}`, {
+      await axios.delete(`http://localhost:5000/doctor/schedule/${slotId}`, {
         headers,
       });
       setScheduleSlots((prev) => prev.filter((s) => s._id !== slotId));

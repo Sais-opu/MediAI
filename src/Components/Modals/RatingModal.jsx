@@ -19,7 +19,7 @@ const RatingModal = ({ isOpen, onClose, doctor }) => {
         setLoading(true);
         try {
             await axios.post(
-                "http://localhost:5001/api/ratings/add",
+                "http://localhost:5000/api/ratings/add",
                 {
                     doctorId: doctor._id,
                     rating,
@@ -80,8 +80,8 @@ const RatingModal = ({ isOpen, onClose, doctor }) => {
                                     <Star
                                         size={40}
                                         className={`${star <= (hoverRating || rating)
-                                                ? "fill-yellow-400 text-yellow-400"
-                                                : "text-gray-300"
+                                            ? "fill-yellow-400 text-yellow-400"
+                                            : "text-gray-300"
                                             }`}
                                     />
                                 </button>
@@ -107,8 +107,8 @@ const RatingModal = ({ isOpen, onClose, doctor }) => {
                             onClick={handleSubmit}
                             disabled={loading}
                             className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${loading
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
                                 }`}
                         >
                             {loading ? "Submitting..." : "Submit Rating"}

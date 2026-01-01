@@ -12,7 +12,7 @@ const PatientPrescriptionModal = ({ isOpen, onClose, appointment }) => {
         try {
             const token = localStorage.getItem("authToken");
             const response = await axios.get(
-                `http://localhost:5001/patient/appointments/${appointment.id}/prescription/download`,
+                `http://localhost:5000/patient/appointments/${appointment.id}/prescription/download`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                     responseType: 'blob', // Important for files

@@ -33,7 +33,7 @@ const TodayAppointmentCard = ({ appt }) => {
                 // Check consultation status
                 const headers = { Authorization: `Bearer ${token}` };
                 const response = await axios.get(
-                    `http://localhost:5001/consultation/${appt._id}/status`,
+                    `http://localhost:5000/consultation/${appt._id}/status`,
                     { headers }
                 );
                 setConsultationStatus(response.data);

@@ -13,7 +13,7 @@ export default function DoctorProfile() {
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`http://localhost:5001/api/doctors/${id}`)
+      .get(`http://localhost:5000/api/doctors/${id}`)
       .then((res) => setDoctor(res.data))
       .catch((err) => console.error("Error loading doctor:", err))
       .finally(() => setLoading(false));

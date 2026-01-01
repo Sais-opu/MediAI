@@ -23,7 +23,7 @@ const Navbar = () => {
 
             try {
                 const res = await axios.get(
-                    `http://localhost:5001/users/role?email=${user.email}`,
+                    `http://localhost:5000/users/role?email=${user.email}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setUserRole(res.data.role || 'user');
@@ -107,8 +107,8 @@ const Navbar = () => {
                                 <Link
                                     to={item.path}
                                     className={`font-medium transition-colors ${isActive
-                                            ? 'bg-blue-500 text-white rounded-md px-2 py-1'
-                                            : 'hover:text-primary'
+                                        ? 'bg-blue-500 text-white rounded-md px-2 py-1'
+                                        : 'hover:text-primary'
                                         }`}
                                 >
                                     {item.name}
@@ -188,7 +188,7 @@ const Navbar = () => {
                                     >
                                         {item.name}
                                     </Link>
-                    </li>
+                                </li>
                             );
                         })}
 
@@ -210,8 +210,8 @@ const Navbar = () => {
                                     }}
                                     className="btn btn-error w-full"
                                 >
-                            Logout
-                        </button>
+                                    Logout
+                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-3 pt-2">
@@ -221,21 +221,21 @@ const Navbar = () => {
                                         }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                            Login
-                        </Link>
+                                    Login
+                                </Link>
                                 <Link
                                     to="/register"
                                     className={`btn w-full ${location.pathname === '/register' ? 'bg-blue-500 text-white' : 'bg-white'
                                         }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                            Register
-                        </Link>
+                                    Register
+                                </Link>
                             </div>
                         )}
                     </ul>
                 </div>
-                )}
+            )}
         </div>
     );
 };
