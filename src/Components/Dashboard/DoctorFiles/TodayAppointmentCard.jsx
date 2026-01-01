@@ -1,7 +1,7 @@
 import React from "react";
 import StatusBadge from "./StatusBadge";
 
-const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onCancel }) => {
+const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescriptionClick, onCancel }) => {
   const isTelemedicine =
     appt.consultationType?.toLowerCase() === "online" ||
     appt.consultationType?.toLowerCase() === "telemedicine" ||
