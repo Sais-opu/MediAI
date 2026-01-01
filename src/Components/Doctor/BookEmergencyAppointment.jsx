@@ -38,7 +38,7 @@
 //         if (!token) return;
 //         const fetchProfile = async () => {
 //             try {
-//                 const res = await axios.get("http://localhost:5000/users/profile", {
+//                 const res = await axios.get("http://localhost:5001/users/profile", {
 //                     headers: { Authorization: `Bearer ${token}` },
 //                 });
 //                 setProfile({
@@ -62,7 +62,7 @@
 //         const fetchSchedules = async () => {
 //             try {
 //                 const res = await axios.get(
-//                     `http://localhost:5000/doctor/${doctor._id}/schedules`
+//                     `http://localhost:5001/doctor/${doctor._id}/schedules`
 //                 );
 //                 if (res.data.message === "No schedules found") {
 //                     setSchedules([]);
@@ -97,7 +97,7 @@
 //         setLoading(true);
 //         try {
 //             await axios.post(
-//                 "http://localhost:5000/emergency/book",
+//                 "http://localhost:5001/emergency/book",
 //                 {
 //                     doctorId: doctor._id,
 //                     scheduleId: selectedSchedule._id,
@@ -376,7 +376,7 @@ const BookEmergencyAppointment = () => {
         if (!token) return;
         const fetchProfile = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/users/profile", {
+                const res = await axios.get("http://localhost:5001/users/profile", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile({
@@ -388,7 +388,14 @@ const BookEmergencyAppointment = () => {
                 });
             } catch (err) {
                 console.error("Failed to load profile", err);
-                toast.error("Failed to load profile");
+                if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                    toast.error("Session expired. Please login again.");
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("user");
+                    navigate("/login");
+                } else {
+                    toast.error("Failed to load profile");
+                }
             }
         };
         fetchProfile();
@@ -400,7 +407,7 @@ const BookEmergencyAppointment = () => {
         const fetchSchedules = async () => {
             try {
                 const res = await axios.get(
-                    `http://localhost:5000/doctor/${doctor._id}/schedules`
+                    `http://localhost:5001/doctor/${doctor._id}/schedules`
                 );
                 if (res.data.message === "No schedules found") {
                     setSchedules([]);
@@ -435,7 +442,7 @@ const BookEmergencyAppointment = () => {
         setLoading(true);
         try {
             await axios.post(
-                "http://localhost:5000/emergency/book",
+                "http://localhost:5001/emergency/book",
                 {
                     doctorId: doctor._id,
                     scheduleId: selectedSchedule._id,
@@ -454,6 +461,13 @@ const BookEmergencyAppointment = () => {
             navigate(`/payment/${emergencyId}/${fee || 1500}?type=emergency`);
         } catch (err) {
             console.error(err);
+            if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                toast.error("Session expired. Please login again.");
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("user");
+                navigate("/login");
+                return;
+            }
             toast.error("Failed to book emergency appointment");
         } finally {
             setLoading(false);
