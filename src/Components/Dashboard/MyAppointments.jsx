@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const MyAppointments = () => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [pastAppointments, setPastAppointments] = useState([]);
     const [consultationHistory, setConsultationHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,6 +42,21 @@ const MyAppointments = () => {
 
     const handleViewDetails = (appointmentId) => {
         toast.info("View Details functionality coming soon");
+    };
+
+    const handlePaymentStatusClick = (appointment) => {
+        if (appointment.paymentStatus?.toLowerCase() === "paid") {
+            if (appointment.paymentId) {
+                navigate(`/invoice/${appointment.paymentId}`);
+            } else {
+                toast.info("Invoice detail not found. It might be an older record.");
+            }
+        } else {
+            // Redirect to payment
+            const amount = appointment.amount || 0;
+            const type = appointment.type?.toLowerCase() === "emergency" ? "emergency" : "normal";
+            navigate(`/payment/${appointment.id}/${amount}?type=${type}`);
+        }
     };
 
     if (loading) {
@@ -97,7 +114,12 @@ const MyAppointments = () => {
                                                         <span>{appointment.appointmentTime}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <span className="badge badge-success">{appointment.paymentStatus}</span>
+                                                        <span
+                                                            onClick={() => handlePaymentStatusClick(appointment)}
+                                                            className={`badge cursor-pointer hover:opacity-80 transition-opacity ${appointment.paymentStatus?.toLowerCase() === 'paid' ? 'badge-success' : 'badge-warning'}`}
+                                                        >
+                                                            {appointment.paymentStatus}
+                                                        </span>
                                                     </div>
                                                     <span className="badge badge-ghost">Completed</span>
                                                     {appointment.type === 'Emergency' && (
