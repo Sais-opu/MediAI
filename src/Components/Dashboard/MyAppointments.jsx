@@ -23,7 +23,7 @@ const MyAppointments = () => {
             const headers = { Authorization: `Bearer ${token}` };
             // Reusing the dashboard endpoint as per plan
             const response = await axios.get(
-                "http://localhost:5000/patient/dashboard",
+                "/patient/dashboard",
                 { headers }
             );
 

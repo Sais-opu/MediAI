@@ -22,7 +22,7 @@ export default function DoctorSchedule() {
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
-      const res = await axios.get("http://localhost:5000/doctor/schedule", {
+      const res = await axios.get("/doctor/schedule", {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Backend returns array of objects with { day: "YYYY-MM-DD", start, end, ... }
@@ -46,7 +46,7 @@ export default function DoctorSchedule() {
     try {
       const token = localStorage.getItem("authToken");
       await axios.post(
-        "http://localhost:5000/doctor/schedule",
+        "/doctor/schedule",
         {
           date: formattedDate,
           start,
@@ -69,7 +69,7 @@ export default function DoctorSchedule() {
   const deleteSlot = async (slotId) => {
     try {
       const token = localStorage.getItem("authToken");
-      await axios.delete(`http://localhost:5000/doctor/schedule/${slotId}`, {
+      await axios.delete(`/doctor/schedule/${slotId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Slot removed");

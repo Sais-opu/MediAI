@@ -48,7 +48,7 @@ const PatientDashboard = () => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             const response = await axios.get(
-                "http://localhost:5000/patient/dashboard",
+                "/patient/dashboard",
                 { headers }
             );
 
@@ -125,7 +125,7 @@ const PatientDashboard = () => {
         try {
             const headers = { Authorization: `Bearer ${token}` };
             await axios.patch(
-                `http://localhost:5000/api/cancel-appointment/${appointmentToCancel.id}`,
+                `/api/cancel-appointment/${appointmentToCancel.id}`,
                 { type: appointmentToCancel.type }, // Pass type (Emergency/Regular)
                 { headers }
             );

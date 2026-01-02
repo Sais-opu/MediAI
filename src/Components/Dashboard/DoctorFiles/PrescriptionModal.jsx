@@ -22,7 +22,7 @@ const PrescriptionModal = ({ isOpen, onClose, appointment }) => {
         try {
             const token = localStorage.getItem("authToken");
             await axios.post(
-                `http://localhost:5000/doctor/appointments/${appointment._id}/prescription`,
+                `/doctor/appointments/${appointment._id}/prescription`,
                 { medicine, dosage, instructions },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

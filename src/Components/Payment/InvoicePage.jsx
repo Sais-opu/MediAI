@@ -15,7 +15,7 @@ export default function InvoicePage() {
   const loadInvoice = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/transactions/${paymentId}`,
+        `/api/transactions/${paymentId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -31,7 +31,8 @@ export default function InvoicePage() {
   };
 
   const downloadPDF = () => {
-    window.open(`http://localhost:5000/invoices/invoice-${paymentId}.pdf`, "_blank");
+    const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    window.open(`${baseURL}/invoices/invoice-${paymentId}.pdf`, "_blank");
   };
 
   if (loading) return <div className="text-center p-10">Loading invoice...</div>;

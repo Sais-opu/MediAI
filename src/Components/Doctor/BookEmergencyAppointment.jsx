@@ -39,7 +39,7 @@ const BookEmergencyAppointment = () => {
         if (!token) return;
         const fetchProfile = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/users/profile", {
+                const res = await axios.get("/users/profile", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile({
@@ -70,7 +70,7 @@ const BookEmergencyAppointment = () => {
         const fetchSchedules = async () => {
             try {
                 const res = await axios.get(
-                    `http://localhost:5000/doctor/${doctor._id}/schedules`
+                    `/doctor/${doctor._id}/schedules`
                 );
                 if (res.data.message === "No schedules found") {
                     setSchedules([]);
@@ -105,7 +105,7 @@ const BookEmergencyAppointment = () => {
         setLoading(true);
         try {
             const res = await axios.post(
-                "http://localhost:5000/emergency/book",
+                "/emergency/book",
                 {
                     doctorId: doctor._id,
                     scheduleId: selectedSchedule._id,

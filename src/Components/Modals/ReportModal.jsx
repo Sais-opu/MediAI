@@ -18,7 +18,7 @@ const ReportModal = ({ isOpen, onClose, doctor }) => {
         setLoading(true);
         try {
             await axios.post(
-                "http://localhost:5000/api/reports/add",
+                "/api/reports/add",
                 {
                     doctorId: doctor._id,
                     reason,

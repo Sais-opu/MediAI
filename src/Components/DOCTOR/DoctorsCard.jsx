@@ -31,7 +31,7 @@ const DoctorsCard = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/doctors");
+                const res = await axios.get("/api/doctors");
                 setDoctors(res.data);
                 setFilteredDoctors(res.data);
                 setLoading(false);
@@ -76,7 +76,7 @@ const DoctorsCard = () => {
             console.log("AI Search triggered with query:", query);
 
 
-            const res = await axios.post("http://localhost:5000/aisearch", { query });
+            const res = await axios.post("/aisearch", { query });
             const specialties = res.data?.specialties || [];
 
 
@@ -128,7 +128,7 @@ const DoctorsCard = () => {
         const token = localStorage.getItem("authToken");
         if (!token) return;
         try {
-            const res = await axios.get("http://localhost:5000/api/favorites", {
+            const res = await axios.get("/api/favorites", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setFavoriteDoctors(res.data.map(d => d._id || d.userId));
@@ -148,7 +148,7 @@ const DoctorsCard = () => {
         const isFavorite = favoriteDoctors.includes(doctorId);
         try {
             if (isFavorite) {
-                await axios.delete("http://localhost:5000/api/favorites/remove", {
+                await axios.delete("/api/favorites/remove", {
                     data: { doctorId },
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -156,7 +156,7 @@ const DoctorsCard = () => {
                 toast.success("Removed from favorites");
             } else {
                 await axios.post(
-                    "http://localhost:5000/api/favorites/add",
+                    "/api/favorites/add",
                     { doctorId },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );

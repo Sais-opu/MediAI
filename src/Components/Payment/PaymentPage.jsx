@@ -14,7 +14,7 @@ export default function PaymentPage() {
       const type = searchParams.get("type") || "normal";
 
       const res = await axios.post(
-        `http://localhost:5000/api/payment/charge?type=${type}`,
+        `/api/payment/charge?type=${type}`,
         {
           appointmentId,
           amount,

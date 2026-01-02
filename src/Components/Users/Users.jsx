@@ -292,7 +292,7 @@ const Users = () => {
         }
 
         try {
-            const res = await axios.get("http://localhost:5000/users", {
+            const res = await axios.get("/users", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setAllUsers(res.data);
@@ -347,7 +347,7 @@ const Users = () => {
         if (!window.confirm("Delete this user?")) return;
         const token = localStorage.getItem("authToken");
         try {
-            await axios.delete(`http://localhost:5000/users/${userId}`, {
+            await axios.delete(`/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("User removed");
@@ -361,7 +361,7 @@ const Users = () => {
         const token = localStorage.getItem("authToken");
         try {
             await axios.put(
-                "http://localhost:5000/users/role",
+                "/users/role",
                 { userId, role: newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
