@@ -280,7 +280,7 @@ const PatientConsultation = ({ appointmentId, onClose }) => {
 
             const headers = { Authorization: `Bearer ${token}` };
             await axios.post(
-                `http://localhost:5000/consultation/${consultationData.consultationId}/rating`,
+                `/consultation/${consultationData.consultationId}/rating`,
                 { rating, comment: ratingComment },
                 { headers }
             );

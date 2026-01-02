@@ -19,7 +19,7 @@ const RatingModal = ({ isOpen, onClose, doctor }) => {
         setLoading(true);
         try {
             await axios.post(
-                "http://localhost:5000/api/ratings/add",
+                "/api/ratings/add",
                 {
                     doctorId: doctor._id,
                     rating,

@@ -21,7 +21,7 @@ const FavoritesPage = () => {
         }
 
         try {
-            const res = await axios.get("http://localhost:5000/api/favorites", {
+            const res = await axios.get("/api/favorites", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setFavorites(res.data);
@@ -36,7 +36,7 @@ const FavoritesPage = () => {
     const removeFavorite = async (doctorId) => {
         const token = localStorage.getItem("authToken");
         try {
-            await axios.delete("http://localhost:5000/api/favorites/remove", {
+            await axios.delete("/api/favorites/remove", {
                 data: { doctorId },
                 headers: { Authorization: `Bearer ${token}` }
             });

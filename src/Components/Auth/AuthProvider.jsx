@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
     // LOGIN using backend /login
     const login = async (email, password) => {
-        const res = await axios.post("http://localhost:5000/login", {
+        const res = await axios.post("/login", {
             email,
             password,
         });

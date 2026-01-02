@@ -56,7 +56,7 @@ const AdminDashboard = () => {
 
         try {
             // Fetch metrics from backend
-            const metricsResponse = await axios.get('http://localhost:5000/api/admin/metrics', {
+            const metricsResponse = await axios.get('/api/admin/metrics', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
