@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
 import * as jwt_decode from "jwt-decode";
 import defaultProfilePic from "../../assets/default-url.jpg";
+import { Stethoscope, Award, FileText, DollarSign, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 const UserSettings = () => {
     const { user } = useContext(AuthContext);
@@ -59,6 +60,18 @@ const UserSettings = () => {
     });
     const [prescriptions, setPrescriptions] = useState([]);
     const [fetchingPrescriptions, setFetchingPrescriptions] = useState(false);
+
+    // --- Doctor Request ---
+    const [doctorRequest, setDoctorRequest] = useState(null);
+    const [requestLoading, setRequestLoading] = useState(true);
+    const [showRequestForm, setShowRequestForm] = useState(false);
+    const [requestData, setRequestData] = useState({
+        specialization: "",
+        qualifications: "",
+        experience: "",
+        bio: "",
+        consultationFee: ""
+    });
 
     // Get current user ID from token
     useEffect(() => {
@@ -205,6 +218,60 @@ const UserSettings = () => {
             fetchPrescriptions();
         }
     }, [role, userId]);
+
+    // Check for existing Doctor Request
+    useEffect(() => {
+        const checkDoctorRequest = async () => {
+            if (role === 'doctor' || !userId) {
+                setRequestLoading(false);
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await axios.get("/api/user/doctor-request-status", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDoctorRequest(response.data.request);
+            } catch (error) {
+                console.error("Error fetching doctor request status:", error);
+            } finally {
+                setRequestLoading(false);
+            }
+        };
+
+        if (userId) {
+            checkDoctorRequest();
+        }
+    }, [userId, role]);
+
+    const handleRequestSubmit = async (e) => {
+        e.preventDefault();
+
+        // Basic Validation
+        if (!requestData.specialization || !requestData.qualifications || !requestData.experience || !requestData.consultationFee) {
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("authToken");
+            await axios.post("/api/user/request-doctor", requestData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            toast.success("Request submitted successfully!");
+            setDoctorRequest({
+                ...requestData,
+                status: 'pending',
+                createdAt: new Date()
+            });
+            setShowRequestForm(false);
+        } catch (error) {
+            console.error("Error submitting request:", error);
+            toast.error(error.response?.data?.message || "Failed to submit request");
+        }
+    };
 
     const handleDownloadPrescription = async (appointmentId) => {
         try {
@@ -1030,6 +1097,150 @@ const UserSettings = () => {
 
 
 
+
+            {/* Request to be Doctor Section */}
+            {role !== 'doctor' && !loading && !requestLoading && (
+                <div className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border-2 border-indigo-100 shadow-sm relative overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-200 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+
+                    <div className="relative z-10">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <div>
+                                <h3 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                                    <Stethoscope className="w-6 h-6 text-indigo-600" />
+                                    Join as a Doctor
+                                </h3>
+                                <p className="text-indigo-600/80 mt-1">
+                                    Are you a qualified medical professional? Apply to join our platform.
+                                </p>
+                            </div>
+
+                            {doctorRequest && doctorRequest.status === 'pending' ? (
+                                <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2 border border-yellow-200 shadow-sm">
+                                    <Clock className="w-4 h-4" />
+                                    Application Pending Review
+                                </div>
+                            ) : doctorRequest && doctorRequest.status === 'rejected' ? (
+                                <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2 border border-red-200 shadow-sm">
+                                    <AlertCircle className="w-4 h-4" />
+                                    Application Rejected
+                                </div>
+                            ) : !showRequestForm ? (
+                                <button
+                                    onClick={() => setShowRequestForm(true)}
+                                    className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 border-none shadow-md hover:shadow-lg transition-all"
+                                >
+                                    Apply Now
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowRequestForm(false)}
+                                    className="btn btn-ghost text-indigo-700 hover:bg-indigo-100"
+                                >
+                                    Cancel Application
+                                </button>
+                            )}
+                        </div>
+
+                        {showRequestForm && !doctorRequest && (
+                            <form onSubmit={handleRequestSubmit} className="bg-white rounded-xl p-6 shadow-md border border-indigo-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <Award className="w-4 h-4 text-indigo-500" /> Specialization
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. Cardiology, Pediatrics"
+                                            value={requestData.specialization}
+                                            onChange={(e) => setRequestData({ ...requestData, specialization: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <FileText className="w-4 h-4 text-indigo-500" /> Qualifications
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. MBBS, FCPS"
+                                            value={requestData.qualifications}
+                                            onChange={(e) => setRequestData({ ...requestData, qualifications: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-indigo-500" /> Experience (Years)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. 5"
+                                            value={requestData.experience}
+                                            onChange={(e) => setRequestData({ ...requestData, experience: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <DollarSign className="w-4 h-4 text-indigo-500" /> Consultation Fee (৳)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. 500"
+                                            value={requestData.consultationFee}
+                                            onChange={(e) => setRequestData({ ...requestData, consultationFee: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control md:col-span-2">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700">Professional Bio</span>
+                                        </label>
+                                        <textarea
+                                            className="textarea textarea-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full h-24"
+                                            placeholder="Tell us about yourself..."
+                                            value={requestData.bio}
+                                            onChange={(e) => setRequestData({ ...requestData, bio: e.target.value })}
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button type="submit" className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 border-none gap-2 px-8">
+                                        <Send className="w-4 h-4" /> Submit Request
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+
+                        {doctorRequest && (doctorRequest.status === 'pending' || doctorRequest.status === 'rejected') && (
+                            <div className="mt-4 bg-white/60 rounded-lg p-4 border border-indigo-50 text-sm text-indigo-800">
+                                <p className="font-semibold mb-1">Your Application Details:</p>
+                                <p><span className="font-medium">Specialization:</span> {doctorRequest.specialization}</p>
+                                <p><span className="font-medium">Applied on:</span> {new Date(doctorRequest.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Cancel Confirmation Modal */}
             {showCancelConfirm && (
