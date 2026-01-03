@@ -328,19 +328,11 @@ const DoctorsCard = () => {
                                     <button
                                         className="btn btn-primary flex-1"
                                         onClick={() => {
-                                            navigate(`/doctor/${doctor._id}`);
-                                        }}
-                                    >
-                                        View Profile
-                                    </button>
-                                    <button
-                                        className="btn btn-outline flex-1"
-                                        onClick={() => {
                                             setSelectedDoctor(doctor);
                                             setModalOpen(true);
                                         }}
                                     >
-                                        Quick View
+                                        View Profile
                                     </button>
                                 </div>
                             </div>
