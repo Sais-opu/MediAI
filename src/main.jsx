@@ -45,6 +45,7 @@ import DoctorPatients from './Components/DOCTOR/DoctorPatients.jsx';
 import Service from './Components/Service.jsx'
 import AboutUs from './Components/About.jsx'
 import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
+import Doctors from './Components/Admin/Doctors.jsx';
 import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
 
 const router = createBrowserRouter([
@@ -75,6 +76,13 @@ const router = createBrowserRouter([
         element:
           <Protected>
             <AdminReportsPage />
+          </Protected>
+      },
+      {
+        path: "/admin/doctors",
+        element:
+          <Protected>
+            <Doctors />
           </Protected>
       },
       {
