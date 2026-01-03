@@ -13,29 +13,8 @@ const AdminDashboard = () => {
         totalRevenue: 0
     });
     const [revenueData, setRevenueData] = useState({
-        weekly: [
-            { day: "Mon", revenue: 8500 },
-            { day: "Tue", revenue: 9200 },
-            { day: "Wed", revenue: 7800 },
-            { day: "Thu", revenue: 10500 },
-            { day: "Fri", revenue: 11200 },
-            { day: "Sat", revenue: 6800 },
-            { day: "Sun", revenue: 5500 }
-        ],
-        monthly: [
-            { month: "Jan", revenue: 45000 },
-            { month: "Feb", revenue: 52000 },
-            { month: "Mar", revenue: 48000 },
-            { month: "Apr", revenue: 55000 },
-            { month: "May", revenue: 60000 },
-            { month: "Jun", revenue: 58000 },
-            { month: "Jul", revenue: 45000 },
-            { month: "Aug", revenue: 52000 },
-            { month: "Sep", revenue: 48000 },
-            { month: "Oct", revenue: 55000 },
-            { month: "Nov", revenue: 60000 },
-            { month: "Dec", revenue: 58000 }
-        ]
+        weekly: [],
+        monthly: []
     });
     const [loading, setLoading] = useState(true);
     const [chartView, setChartView] = useState("weekly"); // "weekly" or "monthly"
@@ -64,36 +43,20 @@ const AdminDashboard = () => {
 
             setMetrics(metricsResponse.data);
 
-            // Use dummy data for revenue charts
-            const dummyWeeklyRevenue = [
-                { day: "Mon", revenue: 8500 },
-                { day: "Tue", revenue: 9200 },
-                { day: "Wed", revenue: 7800 },
-                { day: "Thu", revenue: 10500 },
-                { day: "Fri", revenue: 11200 },
-                { day: "Sat", revenue: 6800 },
-                { day: "Sun", revenue: 5500 }
-            ];
+            setMetrics(metricsResponse.data);
 
-            const dummyMonthlyRevenue = [
-                { month: "Jan", revenue: 45000 },
-                { month: "Feb", revenue: 52000 },
-                { month: "Mar", revenue: 48000 },
-                { month: "Apr", revenue: 55000 },
-                { month: "May", revenue: 60000 },
-                { month: "Jun", revenue: 58000 },
-                { month: "Jul", revenue: 45000 },
-                { month: "Aug", revenue: 52000 },
-                { month: "Sep", revenue: 48000 },
-                { month: "Oct", revenue: 55000 },
-                { month: "Nov", revenue: 60000 },
-                { month: "Dec", revenue: 58000 }
-            ];
+            // Use real data from backend if available, otherwise fallback to empty structure
+            // Backend sends: revenueChart: { weekly: [...], monthly: [...] }
+            if (metricsResponse.data.revenueChart) {
+                setRevenueData(metricsResponse.data.revenueChart);
+            } else {
+                // Fallback / Clear
+                setRevenueData({
+                    weekly: [],
+                    monthly: []
+                });
+            }
 
-            setRevenueData({
-                weekly: dummyWeeklyRevenue,
-                monthly: dummyMonthlyRevenue
-            });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
             if (error.response?.status === 403) {
