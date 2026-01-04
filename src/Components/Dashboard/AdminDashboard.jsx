@@ -13,29 +13,8 @@ const AdminDashboard = () => {
         totalRevenue: 0
     });
     const [revenueData, setRevenueData] = useState({
-        weekly: [
-            { day: "Mon", revenue: 8500 },
-            { day: "Tue", revenue: 9200 },
-            { day: "Wed", revenue: 7800 },
-            { day: "Thu", revenue: 10500 },
-            { day: "Fri", revenue: 11200 },
-            { day: "Sat", revenue: 6800 },
-            { day: "Sun", revenue: 5500 }
-        ],
-        monthly: [
-            { month: "Jan", revenue: 45000 },
-            { month: "Feb", revenue: 52000 },
-            { month: "Mar", revenue: 48000 },
-            { month: "Apr", revenue: 55000 },
-            { month: "May", revenue: 60000 },
-            { month: "Jun", revenue: 58000 },
-            { month: "Jul", revenue: 45000 },
-            { month: "Aug", revenue: 52000 },
-            { month: "Sep", revenue: 48000 },
-            { month: "Oct", revenue: 55000 },
-            { month: "Nov", revenue: 60000 },
-            { month: "Dec", revenue: 58000 }
-        ]
+        weekly: [],
+        monthly: []
     });
     const [loading, setLoading] = useState(true);
     const [chartView, setChartView] = useState("weekly"); // "weekly" or "monthly"
@@ -56,7 +35,7 @@ const AdminDashboard = () => {
 
         try {
             // Fetch metrics from backend
-            const metricsResponse = await axios.get('http://localhost:5000/api/admin/metrics', {
+            const metricsResponse = await axios.get('/api/admin/metrics', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -64,36 +43,20 @@ const AdminDashboard = () => {
 
             setMetrics(metricsResponse.data);
 
-            // Use dummy data for revenue charts
-            const dummyWeeklyRevenue = [
-                { day: "Mon", revenue: 8500 },
-                { day: "Tue", revenue: 9200 },
-                { day: "Wed", revenue: 7800 },
-                { day: "Thu", revenue: 10500 },
-                { day: "Fri", revenue: 11200 },
-                { day: "Sat", revenue: 6800 },
-                { day: "Sun", revenue: 5500 }
-            ];
+            setMetrics(metricsResponse.data);
 
-            const dummyMonthlyRevenue = [
-                { month: "Jan", revenue: 45000 },
-                { month: "Feb", revenue: 52000 },
-                { month: "Mar", revenue: 48000 },
-                { month: "Apr", revenue: 55000 },
-                { month: "May", revenue: 60000 },
-                { month: "Jun", revenue: 58000 },
-                { month: "Jul", revenue: 45000 },
-                { month: "Aug", revenue: 52000 },
-                { month: "Sep", revenue: 48000 },
-                { month: "Oct", revenue: 55000 },
-                { month: "Nov", revenue: 60000 },
-                { month: "Dec", revenue: 58000 }
-            ];
+            // Use real data from backend if available, otherwise fallback to empty structure
+            // Backend sends: revenueChart: { weekly: [...], monthly: [...] }
+            if (metricsResponse.data.revenueChart) {
+                setRevenueData(metricsResponse.data.revenueChart);
+            } else {
+                // Fallback / Clear
+                setRevenueData({
+                    weekly: [],
+                    monthly: []
+                });
+            }
 
-            setRevenueData({
-                weekly: dummyWeeklyRevenue,
-                monthly: dummyMonthlyRevenue
-            });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
             if (error.response?.status === 403) {
@@ -169,8 +132,8 @@ const AdminDashboard = () => {
                         const barColor = barColors[index % barColors.length];
                         const lighterColor = darkenColor(barColor, 30);
                         return (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className="flex-1 flex flex-col items-center h-full group"
                                 onMouseEnter={(e) => {
                                     const tooltip = e.currentTarget.querySelector('.revenue-tooltip');
@@ -184,8 +147,8 @@ const AdminDashboard = () => {
                                 <div className="w-full h-full flex flex-col items-center justify-end pb-10 relative">
                                     <div
                                         className="w-full rounded-t-lg hover:opacity-90 hover:shadow-xl transition-all cursor-pointer relative shadow-lg"
-                                        style={{ 
-                                            height: `${height}%`, 
+                                        style={{
+                                            height: `${height}%`,
                                             minHeight: revenue > 0 ? '30px' : '0',
                                             maxHeight: '100%',
                                             width: '100%',
@@ -194,7 +157,7 @@ const AdminDashboard = () => {
                                         }}
                                     >
                                     </div>
-                                    <div 
+                                    <div
                                         className="revenue-tooltip absolute -top-14 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap z-50 pointer-events-none shadow-xl font-semibold transition-opacity duration-200"
                                         style={{ opacity: 0 }}
                                     >

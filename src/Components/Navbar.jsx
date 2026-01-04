@@ -23,7 +23,7 @@ const Navbar = () => {
 
             try {
                 const res = await axios.get(
-                    `http://localhost:5000/users/role?email=${user.email}`,
+                    `/users/role?email=${user.email}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setUserRole(res.data.role || 'user');
@@ -50,7 +50,6 @@ const Navbar = () => {
                 { name: 'Doctors', path: '/doctorCard' },
                 { name: 'Services', path: '/services' },
                 { name: 'About Us', path: '/about' },
-                { name: 'Contact', path: '/contact' },
             ];
         }
 
@@ -59,8 +58,6 @@ const Navbar = () => {
                 { name: 'Home', path: '/' },
                 { name: 'Activity Log', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
-                { name: 'Appointments', path: '/admin/appointments' },
-                { name: 'Medicines', path: '/admin/medicines' },
                 { name: 'Reports', path: '/admin/reports' },
             ];
         }
@@ -68,7 +65,7 @@ const Navbar = () => {
         if (userRole === 'doctor') {
             return [
                 { name: 'Home', path: '/' },
-                { name: 'Schedule', path: '/doctor/schedule-page' },
+                { name: 'Schedule Management', path: '/doctor/schedule' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Emergency Appointment', path: '/doctor-emergency' },
                 { name: 'Reports', path: '/doctor/reports' },
@@ -108,8 +105,8 @@ const Navbar = () => {
                                 <Link
                                     to={item.path}
                                     className={`font-medium transition-colors ${isActive
-                                            ? 'bg-blue-500 text-white rounded-md px-2 py-1'
-                                            : 'hover:text-primary'
+                                        ? 'bg-blue-500 text-white rounded-md px-2 py-1'
+                                        : 'hover:text-primary'
                                         }`}
                                 >
                                     {item.name}
@@ -189,7 +186,7 @@ const Navbar = () => {
                                     >
                                         {item.name}
                                     </Link>
-                    </li>
+                                </li>
                             );
                         })}
 
@@ -211,8 +208,8 @@ const Navbar = () => {
                                     }}
                                     className="btn btn-error w-full"
                                 >
-                            Logout
-                        </button>
+                                    Logout
+                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-3 pt-2">
@@ -222,21 +219,21 @@ const Navbar = () => {
                                         }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                            Login
-                        </Link>
+                                    Login
+                                </Link>
                                 <Link
                                     to="/register"
                                     className={`btn w-full ${location.pathname === '/register' ? 'bg-blue-500 text-white' : 'bg-white'
                                         }`}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                            Register
-                        </Link>
+                                    Register
+                                </Link>
                             </div>
                         )}
                     </ul>
                 </div>
-                )}
+            )}
         </div>
     );
 };

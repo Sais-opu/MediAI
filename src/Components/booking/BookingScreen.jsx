@@ -15,7 +15,7 @@ export default function BookingScreen() {
 
   // Load doctors
   useEffect(() => {
-    axios.get("http://localhost:5000/api/doctors")
+    axios.get("/api/doctors")
       .then(res => setDoctors(res.data))
       .catch(err => console.error(err));
   }, []);
@@ -23,7 +23,7 @@ export default function BookingScreen() {
   // When doctor is selected → load their slots
   const loadSlots = async (doctorId) => {
     const res = await axios.get(
-      `http://localhost:5000/api/doctor/slots?doctorId=${doctorId}`
+      `/api/doctor/slots?doctorId=${doctorId}`
     );
     setSlots(res.data);
   };
@@ -36,7 +36,7 @@ export default function BookingScreen() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/appointments/book",
+        "/api/appointments/book",
         {
           doctorId: selectedDoctor._id,
           date: selectedDate,

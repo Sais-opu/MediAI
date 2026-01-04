@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion"; 
-import { User, Mail, Lock, Activity, ArrowRight, ShieldCheck, Zap } from "lucide-react"; 
+import { motion } from "framer-motion";
+import { User, Mail, Lock, Activity, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 
 const Register = () => {
     const [fullName, setFullName] = useState("");
@@ -16,7 +16,7 @@ const Register = () => {
         const userData = { fullName, email, password };
         try {
             const res = await axios.post(
-                "http://localhost:5000/register",
+                "/register",
                 userData,
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -40,20 +40,20 @@ const Register = () => {
             </div>
 
             {/* Medium Sized Professional Card */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
                 className="relative z-10 w-full max-w-4xl bg-white rounded-[2rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col md:flex-row border border-slate-100"
             >
-                
+
                 {/* Left Side: Futuristic Medical Image & Branding */}
                 <div className="w-full md:w-5/12 bg-blue-600 relative p-10 flex flex-col justify-between text-white overflow-hidden">
                     {/* Background Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-indigo-900 opacity-90" />
-                    
+
                     <div className="relative z-10">
-                        <motion.div 
+                        <motion.div
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
@@ -64,7 +64,7 @@ const Register = () => {
                             </div>
                             <span className="text-2xl font-black tracking-tighter uppercase">MediAi</span>
                         </motion.div>
-                        
+
                         <h2 className="text-3xl font-bold leading-[1.2] mb-4">
                             The Next Era of <span className="text-blue-300">Clinical Intelligence.</span>
                         </h2>
@@ -75,12 +75,12 @@ const Register = () => {
 
                     <div className="relative z-10 mt-8">
                         {/* New High-Tech Medical Image */}
-                        <motion.img 
+                        <motion.img
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.4 }}
-                            src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1000" 
-                            alt="AI Medical Interface" 
+                            src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1000"
+                            alt="AI Medical Interface"
                             className="rounded-2xl shadow-2xl border border-white/20 w-full h-48 object-cover mb-6 transform hover:scale-105 transition-transform duration-500"
                         />
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
@@ -147,10 +147,10 @@ const Register = () => {
                             </div>
                         </div>
 
-                        <motion.button 
+                        <motion.button
                             whileHover={{ scale: 1.01, translateY: -2 }}
                             whileTap={{ scale: 0.98 }}
-                            type="submit" 
+                            type="submit"
                             className="w-full py-4.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 text-lg transition-all mt-8"
                         >
                             Register Now
@@ -159,8 +159,8 @@ const Register = () => {
 
                         <p className="text-center text-slate-500 mt-8 font-bold text-sm">
                             Already a member?{" "}
-                            <Link 
-                                to="/login" 
+                            <Link
+                                to="/login"
                                 className="text-blue-600 hover:text-blue-800 transition-colors decoration-2 underline underline-offset-4"
                             >
                                 Login Here

@@ -187,7 +187,7 @@ const PatientEmergencyList = () => {
     const fetchEmergencies = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await axios.get("http://localhost:5000/emergency/patient", {
+            const res = await axios.get("/emergency/patient", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const sorted = res.data.sort((a, b) => {
@@ -213,7 +213,7 @@ const PatientEmergencyList = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this emergency record?")) return;
         try {
-            const res = await axios.delete(`http://localhost:5000/emergency/patient/${id}`, {
+            const res = await axios.delete(`/emergency/patient/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (res.data.success) {

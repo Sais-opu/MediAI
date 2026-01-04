@@ -21,7 +21,7 @@ const SleepDurationTracker = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/sleep/history', {
+      const response = await axios.get('/health/sleep/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(response.data);
@@ -34,7 +34,7 @@ const SleepDurationTracker = () => {
 
   const fetchWeeklySummary = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/sleep/weekly', {
+      const response = await axios.get('/health/sleep/weekly', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWeeklySummary(response.data);
@@ -54,7 +54,7 @@ const SleepDurationTracker = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/health/sleep',
+        '/health/sleep',
         { bedtime, wakeTime, quality },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -120,7 +120,7 @@ const SleepDurationTracker = () => {
           {/* Log Sleep Form */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Log Your Sleep</h2>
-            
+
             <form onSubmit={logSleep} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -158,15 +158,14 @@ const SleepDurationTracker = () => {
                       key={q}
                       type="button"
                       onClick={() => setQuality(q)}
-                      className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                        quality === q
-                          ? q === 'Poor'
-                            ? 'bg-red-600 text-white'
-                            : q === 'Average'
+                      className={`py-3 px-4 rounded-lg font-semibold transition-all ${quality === q
+                        ? q === 'Poor'
+                          ? 'bg-red-600 text-white'
+                          : q === 'Average'
                             ? 'bg-yellow-600 text-white'
                             : 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
                     >
                       {getQualityIcon(q)} {q}
                     </button>
@@ -222,7 +221,7 @@ const SleepDurationTracker = () => {
             {/* Sleep History */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Sleep History</h2>
-              
+
               {loadingData ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
@@ -256,21 +255,21 @@ const SleepDurationTracker = () => {
                         <div>
                           <span className="font-medium">Bedtime:</span>
                           <br />
-                          {new Date(record.bedtime).toLocaleString([], { 
-                            month: 'short', 
+                          {new Date(record.bedtime).toLocaleString([], {
+                            month: 'short',
                             day: 'numeric',
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                            hour: '2-digit',
+                            minute: '2-digit'
                           })}
                         </div>
                         <div>
                           <span className="font-medium">Wake Time:</span>
                           <br />
-                          {new Date(record.wakeTime).toLocaleString([], { 
-                            month: 'short', 
+                          {new Date(record.wakeTime).toLocaleString([], {
+                            month: 'short',
                             day: 'numeric',
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                            hour: '2-digit',
+                            minute: '2-digit'
                           })}
                         </div>
                       </div>

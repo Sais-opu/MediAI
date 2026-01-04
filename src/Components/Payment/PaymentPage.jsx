@@ -14,7 +14,7 @@ export default function PaymentPage() {
       const type = searchParams.get("type") || "normal";
 
       const res = await axios.post(
-        `http://localhost:5000/api/payment/charge?type=${type}`,
+        `/api/payment/charge?type=${type}`,
         {
           appointmentId,
           amount,
@@ -36,6 +36,13 @@ export default function PaymentPage() {
       // window.open(`/invoice/${res.data.paymentId}`, "_blank");
 
     } catch (err) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
       toast.error(
         err.response?.data?.error ||
         "Transaction failed. Please check your card or network."

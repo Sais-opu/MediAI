@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { AuthContext } from "../Auth/AuthProvider.jsx";
 import * as jwt_decode from "jwt-decode";
 import defaultProfilePic from "../../assets/default-url.jpg";
+import { Stethoscope, Award, FileText, DollarSign, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 const UserSettings = () => {
     const { user } = useContext(AuthContext);
@@ -57,6 +58,20 @@ const UserSettings = () => {
         newPassword: "",
         confirmNewPassword: ""
     });
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [fetchingPrescriptions, setFetchingPrescriptions] = useState(false);
+
+    // --- Doctor Request ---
+    const [doctorRequest, setDoctorRequest] = useState(null);
+    const [requestLoading, setRequestLoading] = useState(true);
+    const [showRequestForm, setShowRequestForm] = useState(false);
+    const [requestData, setRequestData] = useState({
+        specialization: "",
+        qualifications: "",
+        experience: "",
+        bio: "",
+        consultationFee: ""
+    });
 
     // Get current user ID from token
     useEffect(() => {
@@ -95,14 +110,14 @@ const UserSettings = () => {
                 }
 
                 try {
-                    response = await axios.get(`http://localhost:5000/api/user/${targetId}`, {
+                    response = await axios.get(`/api/user/${targetId}`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     });
                 } catch (profileError) {
                     // Fallback to self-profile endpoint
-                    response = await axios.get(`http://localhost:5000/users/profile`, {
+                    response = await axios.get(`/users/profile`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -178,6 +193,109 @@ const UserSettings = () => {
 
         fetchUserData();
     }, [profileId, userId]);
+
+    // Fetch Prescriptions for patient
+    useEffect(() => {
+        const fetchPrescriptions = async () => {
+            if (role === 'doctor' || !userId) return;
+
+            setFetchingPrescriptions(true);
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await axios.get("/api/patient/prescriptions", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPrescriptions(response.data);
+            } catch (error) {
+                console.error("Error fetching prescriptions:", error);
+                // silent fail for non-critical section
+            } finally {
+                setFetchingPrescriptions(false);
+            }
+        };
+
+        if (role !== 'doctor' && userId) {
+            fetchPrescriptions();
+        }
+    }, [role, userId]);
+
+    // Check for existing Doctor Request
+    useEffect(() => {
+        const checkDoctorRequest = async () => {
+            if (role === 'doctor' || !userId) {
+                setRequestLoading(false);
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await axios.get("/api/user/doctor-request-status", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDoctorRequest(response.data.request);
+            } catch (error) {
+                console.error("Error fetching doctor request status:", error);
+            } finally {
+                setRequestLoading(false);
+            }
+        };
+
+        if (userId) {
+            checkDoctorRequest();
+        }
+    }, [userId, role]);
+
+    const handleRequestSubmit = async (e) => {
+        e.preventDefault();
+
+        // Basic Validation
+        if (!requestData.specialization || !requestData.qualifications || !requestData.experience || !requestData.consultationFee) {
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("authToken");
+            await axios.post("/api/user/request-doctor", requestData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            toast.success("Request submitted successfully!");
+            setDoctorRequest({
+                ...requestData,
+                status: 'pending',
+                createdAt: new Date()
+            });
+            setShowRequestForm(false);
+        } catch (error) {
+            console.error("Error submitting request:", error);
+            toast.error(error.response?.data?.message || "Failed to submit request");
+        }
+    };
+
+    const handleDownloadPrescription = async (appointmentId) => {
+        try {
+            const token = localStorage.getItem("authToken");
+            const response = await axios.get(
+                `/patient/appointments/${appointmentId}/prescription/download`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    responseType: 'blob',
+                }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Prescription_${appointmentId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Download failed:", error);
+            toast.error("Failed to download prescription");
+        }
+    };
 
     //profile picture file selection
     const handleProfilePictureChange = (e) => {
@@ -259,7 +377,7 @@ const UserSettings = () => {
                 formDataToSend.append('bio', formData.bio || "");
             }
 
-            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            const response = await axios.put(`/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -329,7 +447,7 @@ const UserSettings = () => {
             console.log("Sending update request with token:", token ? "Token present" : "No token");
             console.log("User ID:", userId);
 
-            const response = await axios.put(`http://localhost:5000/api/user/profile/${userId}`, formDataToSend, {
+            const response = await axios.put(`/api/user/profile/${userId}`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -398,7 +516,7 @@ const UserSettings = () => {
 
         try {
             const token = localStorage.getItem("authToken");
-            const res = await axios.put(`http://localhost:5000/api/user/change-password/${userId}`, {
+            const res = await axios.put(`/api/user/change-password/${userId}`, {
                 currentPassword: passData.currentPassword,
                 newPassword: passData.newPassword
             }, {
@@ -813,14 +931,64 @@ const UserSettings = () => {
 
             {/* Patient-only sections: Prescriptions & Consultations */}
             {role !== 'doctor' && (
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-gray-800 mb-3">Suggested Prescriptions</h3>
-                        <p className="text-gray-600">No prescriptions available yet.</p>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-gray-800">Suggested Prescriptions</h3>
+                            <span className="badge badge-primary">{prescriptions.length}</span>
+                        </div>
+
+                        {fetchingPrescriptions ? (
+                            <div className="flex justify-center p-4">
+                                <span className="loading loading-spinner text-primary"></span>
+                            </div>
+                        ) : prescriptions.length > 0 ? (
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                                {prescriptions.map((p) => (
+                                    <div key={p.appointmentId} className="p-4 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-between group hover:bg-blue-100 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-800">Dr. {p.doctorName}</p>
+                                                <p className="text-xs text-gray-500">{new Date(p.date).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDownloadPrescription(p.appointmentId)}
+                                            className="btn btn-circle btn-ghost text-blue-600 hover:bg-blue-200"
+                                            title="Download PDF"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="text-gray-300 mb-2 flex justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <p className="text-gray-400">No prescriptions yet</p>
+                            </div>
+                        )}
                     </div>
                     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-gray-800 mb-3">Past Consultations</h3>
-                        <p className="text-gray-600">No consultation history yet.</p>
+                        <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">Need Assistance?</h3>
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-5 text-white">
+                            <p className="font-medium mb-3">Questions about your prescriptions?</p>
+                            <p className="text-sm opacity-90 mb-4">Contact our support or consult with your doctor for clarifications.</p>
+                            <button className="btn btn-sm btn-outline text-white hover:bg-white hover:text-blue-600 border-white">
+                                Contact Support
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -929,6 +1097,150 @@ const UserSettings = () => {
 
 
 
+
+            {/* Request to be Doctor Section */}
+            {role !== 'doctor' && !loading && !requestLoading && (
+                <div className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border-2 border-indigo-100 shadow-sm relative overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-200 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+
+                    <div className="relative z-10">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <div>
+                                <h3 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                                    <Stethoscope className="w-6 h-6 text-indigo-600" />
+                                    Join as a Doctor
+                                </h3>
+                                <p className="text-indigo-600/80 mt-1">
+                                    Are you a qualified medical professional? Apply to join our platform.
+                                </p>
+                            </div>
+
+                            {doctorRequest && doctorRequest.status === 'pending' ? (
+                                <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2 border border-yellow-200 shadow-sm">
+                                    <Clock className="w-4 h-4" />
+                                    Application Pending Review
+                                </div>
+                            ) : doctorRequest && doctorRequest.status === 'rejected' ? (
+                                <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2 border border-red-200 shadow-sm">
+                                    <AlertCircle className="w-4 h-4" />
+                                    Application Rejected
+                                </div>
+                            ) : !showRequestForm ? (
+                                <button
+                                    onClick={() => setShowRequestForm(true)}
+                                    className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 border-none shadow-md hover:shadow-lg transition-all"
+                                >
+                                    Apply Now
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowRequestForm(false)}
+                                    className="btn btn-ghost text-indigo-700 hover:bg-indigo-100"
+                                >
+                                    Cancel Application
+                                </button>
+                            )}
+                        </div>
+
+                        {showRequestForm && !doctorRequest && (
+                            <form onSubmit={handleRequestSubmit} className="bg-white rounded-xl p-6 shadow-md border border-indigo-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <Award className="w-4 h-4 text-indigo-500" /> Specialization
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. Cardiology, Pediatrics"
+                                            value={requestData.specialization}
+                                            onChange={(e) => setRequestData({ ...requestData, specialization: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <FileText className="w-4 h-4 text-indigo-500" /> Qualifications
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. MBBS, FCPS"
+                                            value={requestData.qualifications}
+                                            onChange={(e) => setRequestData({ ...requestData, qualifications: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-indigo-500" /> Experience (Years)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. 5"
+                                            value={requestData.experience}
+                                            onChange={(e) => setRequestData({ ...requestData, experience: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                                                <DollarSign className="w-4 h-4 text-indigo-500" /> Consultation Fee (৳)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full"
+                                            placeholder="e.g. 500"
+                                            value={requestData.consultationFee}
+                                            onChange={(e) => setRequestData({ ...requestData, consultationFee: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-control md:col-span-2">
+                                        <label className="label">
+                                            <span className="label-text font-semibold text-gray-700">Professional Bio</span>
+                                        </label>
+                                        <textarea
+                                            className="textarea textarea-bordered focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 w-full h-24"
+                                            placeholder="Tell us about yourself..."
+                                            value={requestData.bio}
+                                            onChange={(e) => setRequestData({ ...requestData, bio: e.target.value })}
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 flex justify-end">
+                                    <button type="submit" className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 border-none gap-2 px-8">
+                                        <Send className="w-4 h-4" /> Submit Request
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+
+                        {doctorRequest && (doctorRequest.status === 'pending' || doctorRequest.status === 'rejected') && (
+                            <div className="mt-4 bg-white/60 rounded-lg p-4 border border-indigo-50 text-sm text-indigo-800">
+                                <p className="font-semibold mb-1">Your Application Details:</p>
+                                <p><span className="font-medium">Specialization:</span> {doctorRequest.specialization}</p>
+                                <p><span className="font-medium">Applied on:</span> {new Date(doctorRequest.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Cancel Confirmation Modal */}
             {showCancelConfirm && (

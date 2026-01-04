@@ -19,7 +19,7 @@ const BMICalculator = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/health/bmi/history', {
+      const response = await axios.get('/health/bmi/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(response.data);
@@ -41,7 +41,7 @@ const BMICalculator = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/health/bmi',
+        '/health/bmi',
         { weight: parseFloat(weight), height: parseFloat(height) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -95,7 +95,7 @@ const BMICalculator = () => {
           {/* Calculator Form */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Calculate Your BMI</h2>
-            
+
             <form onSubmit={calculateBMI} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -176,7 +176,7 @@ const BMICalculator = () => {
           {/* History */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Your BMI History</h2>
-            
+
             {loadingHistory ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
