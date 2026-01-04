@@ -47,6 +47,7 @@ import AboutUs from './Components/About.jsx'
 import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
 import Doctors from './Components/Admin/Doctors.jsx';
 import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
+import DoctorSchedulePage from './Components/Doctor/DoctorSchedulePage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -122,6 +123,13 @@ const router = createBrowserRouter([
         element:
           <Protected>
             <DoctorEmergencyList />
+          </Protected >,
+      },
+      {
+        path: "/doctor/schedule-page",
+        element: 
+          <Protected>
+            <DoctorSchedulePage />
           </Protected >,
       },
       {
