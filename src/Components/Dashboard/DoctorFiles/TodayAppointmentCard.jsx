@@ -1,7 +1,7 @@
 import React from "react";
 import StatusBadge from "./StatusBadge";
 
-const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescriptionClick, onCancel }) => {
+const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescriptionClick, onCancel, onComplete }) => {
   const isTelemedicine =
     appt.consultationType?.toLowerCase() === "online" ||
     appt.consultationType?.toLowerCase() === "telemedicine" ||
@@ -60,6 +60,14 @@ const TodayAppointmentCard = ({ appt, onStartCall, onViewDetails, onPrescription
           >
             Prescriptions
           </button>
+          {(appt.status === "confirmed" || appt.status === "Confirmed" || appt.status === "pending" || appt.status === "Pending") && (
+            <button
+              onClick={onComplete}
+              className="rounded-lg border border-green-100 px-2 py-1.5 text-green-600 hover:bg-green-50 transition-colors cursor-pointer font-medium"
+            >
+              Done
+            </button>
+          )}
           <button
             onClick={onCancel}
             className="flex-1 rounded-lg border border-red-100 px-2 py-1.5 text-red-600 hover:bg-red-50 transition-colors cursor-pointer"

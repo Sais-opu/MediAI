@@ -50,6 +50,7 @@ const Navbar = () => {
                 { name: 'Doctors', path: '/doctorCard' },
                 { name: 'Services', path: '/services' },
                 { name: 'About Us', path: '/about' },
+              
             ];
         }
 
