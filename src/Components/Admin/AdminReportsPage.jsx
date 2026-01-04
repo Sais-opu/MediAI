@@ -98,7 +98,7 @@ const AdminReportsPage = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Admin Dashboard: Doctor Reports</h1>
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">Reported Doctors</h1>
 
             {/* Tabs */}
             <div className="flex space-x-4 mb-6 border-b border-gray-200">

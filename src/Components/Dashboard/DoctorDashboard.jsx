@@ -340,25 +340,6 @@ const DoctorDashboard = () => {
         </section>
       </div>
 
-      {/* Scheduling Management */}
-      <div>
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Scheduling Management
-            </h2>
-            <span className="text-[11px] text-gray-500">
-              Availability is synced to the patient booking interface in real time.
-            </span>
-          </div>
-          <ScheduleForm
-            slots={scheduleSlots}
-            onAddSlot={handleAddSlot}
-            onDeleteSlot={handleDeleteSlot}
-          />
-        </section>
-      </div>
-
       {/* Consultation Overlay */}
       {activeConsultationId && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm">
