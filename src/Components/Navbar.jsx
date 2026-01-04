@@ -50,7 +50,6 @@ const Navbar = () => {
                 { name: 'Doctors', path: '/doctorCard' },
                 { name: 'Services', path: '/services' },
                 { name: 'About Us', path: '/about' },
-                // { name: 'Contact', path: '/contact' },
             ];
         }
 
@@ -59,8 +58,6 @@ const Navbar = () => {
                 { name: 'Home', path: '/' },
                 { name: 'Activity Log', path: '/users' },
                 { name: 'Doctors', path: '/admin/doctors' },
-                { name: 'Appointments', path: '/admin/appointments' },
-                { name: 'Medicines', path: '/admin/medicines' },
                 { name: 'Reports', path: '/admin/reports' },
             ];
         }
@@ -68,6 +65,7 @@ const Navbar = () => {
         if (userRole === 'doctor') {
             return [
                 { name: 'Home', path: '/' },
+                { name: 'Schedule Management', path: '/doctor/schedule' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Emergency Appointment', path: '/doctor-emergency' },
                 { name: 'Reports', path: '/doctor/reports' },
