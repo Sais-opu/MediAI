@@ -27,6 +27,7 @@ const UserSettings = () => {
         dob: "",
         gender: "",
         photoURL: "",
+        address: "",
 
         bio: "",
         consultationFee: ""
@@ -44,7 +45,8 @@ const UserSettings = () => {
         qualifications: "",
         experience: "",
         bio: "",
-        consultationFee: ""
+        consultationFee: "",
+        address: ""
     });
 
     // --- Profile Picture Upload ---
@@ -113,19 +115,29 @@ const UserSettings = () => {
                     throw new Error("No user id available to fetch profile");
                 }
 
+                // Prefer the merged profile endpoints which combine user + userinfo/doctorinfo
+                // If viewing another user's profile (profileId present) call the profile-by-id endpoint
+                // Otherwise fetch the current user's profile
                 try {
-                    response = await axios.get(`/api/user/${targetId}`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
+                    if (profileId) {
+                        response = await axios.get(`/api/user/profile/${targetId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                    } else {
+                        response = await axios.get(`/users/profile`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                    }
                 } catch (profileError) {
-                    // Fallback to self-profile endpoint
-                    response = await axios.get(`/users/profile`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
+                    // As a last resort, try the older user-by-id endpoint for compatibility
+                    try {
+                        response = await axios.get(`/api/user/${targetId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                    } catch (err) {
+                        // keep original error for outer catch
+                        throw profileError;
+                    }
                 }
 
                 const userData = response.data;
@@ -154,7 +166,8 @@ const UserSettings = () => {
                     qualifications: userData.qualifications || "",
                     experience: userData.experience || "",
                     bio: userData.bio || "",
-                    consultationFee: userData.consultationFee || ""
+                    consultationFee: userData.consultationFee || "",
+                    address: userData.address || ""
                 };
 
                 // Update role from user data
@@ -429,6 +442,7 @@ const UserSettings = () => {
             formDataToSend.append('phone', formData.phone || "");
             formDataToSend.append('dob', formData.dob || "");
             formDataToSend.append('gender', formData.gender || "");
+            formDataToSend.append('address', formData.address || "");
 
             if (role === 'doctor') {
                 formDataToSend.append('specialization', formData.specialization || "");
@@ -488,6 +502,7 @@ const UserSettings = () => {
             formDataToSend.append('phone', formData.phone || "");
             formDataToSend.append('dob', formData.dob || "");
             formDataToSend.append('gender', formData.gender || "");
+            formDataToSend.append('address', formData.address || "");
 
             // Add doctor-specific fields if role is doctor
             if (role === 'doctor') {
@@ -530,7 +545,8 @@ const UserSettings = () => {
                     qualifications: updatedUserData.qualifications || "",
                     experience: updatedUserData.experience || "",
                     bio: updatedUserData.bio || "",
-                    consultationFee: updatedUserData.consultationFee || ""
+                    consultationFee: updatedUserData.consultationFee || "",
+                    address: updatedUserData.address || ""
                 };
 
                 setFormData(updatedFormData);
@@ -960,6 +976,25 @@ const UserSettings = () => {
                                 )}
                             </div>
 
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-semibold text-gray-700">Address</span>
+                                </label>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        className="input input-bordered w-full text-gray-800"
+                                        placeholder="Enter Your Address"
+                                        value={formData.address || ""}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    />
+                                ) : (
+                                    <p className="text-gray-800 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        {formData.address || "N/A"}
+                                    </p>
+                                )}
+                            </div>
+
                             {/* Doctor-specific fields in contact section */}
                             {role === 'doctor' && (
                                 <>
@@ -1098,7 +1133,7 @@ const UserSettings = () => {
                                 <span className="label-text font-semibold text-gray-700">Current Password</span>
                             </label>
                             <input
-                                type="password"
+                                type="text"
                                 placeholder="Enter your current password"
                                 className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
                                 value={passData.currentPassword}
@@ -1111,7 +1146,7 @@ const UserSettings = () => {
                                 <span className="label-text font-semibold text-gray-700">New Password</span>
                             </label>
                             <input
-                                type="password"
+                                type="text"
                                 placeholder="Enter your new password"
                                 className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
                                 value={passData.newPassword}
@@ -1127,7 +1162,7 @@ const UserSettings = () => {
                                 <span className="label-text font-semibold text-gray-700">Confirm New Password</span>
                             </label>
                             <input
-                                type="password"
+                                type="text"
                                 placeholder="Confirm your new password"
                                 className="input input-bordered w-full bg-white text-gray-800 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
                                 value={passData.confirmNewPassword}
