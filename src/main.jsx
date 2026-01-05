@@ -54,7 +54,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
-    //Apu part start-------------------------------------------------------------
+    //Apu part start-----------------------------------------------------------
     children: [
       {
         path: "/",
