@@ -145,6 +145,33 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handleCompleteAppointment = async (appointment) => {
+    if (!window.confirm("Mark this appointment as completed?")) {
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.patch(
+        `/api/complete-appointment/${appointment._id || appointment.id}`,
+        {},
+        { headers }
+      );
+
+      toast.success("Appointment marked as completed");
+      // Refresh dashboard data
+      const response = await axios.get("/doctor/dashboard", { headers });
+      setTodayAppointments(response.data.todayAppointments || []);
+      setUpcomingAppointments(response.data.upcomingAppointments || []);
+      setWeeklyStats(response.data.weeklyStats || null);
+    } catch (error) {
+      console.error("Error completing appointment:", error);
+      const msg = error.response?.data?.message || "Failed to complete appointment";
+      toast.error(msg);
+    }
+  };
+
   const totalDailyAppointments = useMemo(
     () =>
       weeklyStats?.dailyAppointments?.reduce((sum, d) => sum + d.count, 0) ||
@@ -259,6 +286,7 @@ const DoctorDashboard = () => {
                   onViewDetails={() => handleViewDetails(appt)}
                   onPrescriptionClick={handlePrescriptionClick}
                   onCancel={() => initiateCancel(appt)}
+                  onComplete={() => handleCompleteAppointment(appt)}
                 />
               ))
             )}
