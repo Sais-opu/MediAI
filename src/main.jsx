@@ -27,12 +27,12 @@ import HealthTools from './Components/HealthTools/HealthTools.jsx';
 import BMICalculator from './Components/HealthTools/BMICalculator.jsx';
 import WaterIntakeTracker from './Components/HealthTools/WaterIntakeTracker.jsx';
 import SleepDurationTracker from './Components/HealthTools/SleepDurationTracker.jsx';
-import DoctorCard from './Components/DOCTOR/DoctorsCard.jsx';
+import DoctorCard from './Components/Doctor/DoctorsCard.jsx';
 
 
 // Doctor features
-import DoctorProfile from './Components/DOCTOR/DoctorProfile.jsx';
-import DoctorSchedule from './Components/DOCTOR/DoctorSchedule.jsx';
+import DoctorProfile from './Components/Doctor/DoctorProfile.jsx';
+import DoctorSchedule from './Components/Doctor/DoctorSchedule.jsx';
 import BookingScreen from './Components/booking/BookingScreen.jsx';
 import PatientBooking from './Components/booking/PatientBooking.jsx';
 import PaymentPage from './Components/Payment/PaymentPage.jsx';
@@ -41,14 +41,13 @@ import BookEmergencyAppointment from './Components/Doctor/BookEmergencyAppointme
 import DoctorEmergencyList from './Components/Doctor/DoctorEmergencyList.jsx';
 import PatientEmergencyList from './Components/Doctor/PatientEmergencyList.jsx'
 import MyAppointments from './Components/Dashboard/MyAppointments.jsx';
-import DoctorPatients from './Components/DOCTOR/DoctorPatients.jsx';
+import DoctorPatients from './Components/Doctor/DoctorPatients.jsx';
 import Service from './Components/Service.jsx'
 import AboutUs from './Components/About.jsx'
 import AdminReportsPage from './Components/Admin/AdminReportsPage.jsx';
 import Doctors from './Components/Admin/Doctors.jsx';
 import FavoritesPage from './Components/Favorites/FavoritesPage.jsx';
-import DoctorSchedulePage from './Components/Doctor/DoctorSchedulePage.jsx';
-
+import DoctorSchedulePage from './Components/Doctor/DoctorSchedulePage.jsx'
 
 const router = createBrowserRouter([
   {
