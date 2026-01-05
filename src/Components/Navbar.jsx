@@ -69,7 +69,6 @@ const Navbar = () => {
                 { name: 'Schedule Management', path: '/doctor/schedule-page' },
                 { name: 'Patients', path: '/doctor/patients' },
                 { name: 'Emergency Appointment', path: '/doctor-emergency' },
-                { name: 'Reports', path: '/doctor/reports' },
                 { name: 'Profile', path: '/user-settings' },
             ];
         }
