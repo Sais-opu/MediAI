@@ -60,6 +60,13 @@ export default function DoctorSchedule() {
       setStart("");
       setEnd("");
       loadSchedules();
+      // notify other parts of the app (cross-tab and same-window)
+      try {
+        localStorage.setItem('schedulesUpdated', Date.now().toString());
+      } catch (err) {
+        // ignore
+      }
+      try { window.dispatchEvent(new Event('schedulesUpdated')); } catch (e) {}
     } catch (error) {
       console.error("Error adding slot:", error);
       toast.error("Failed to add slot");
@@ -74,6 +81,11 @@ export default function DoctorSchedule() {
       });
       toast.success("Slot removed");
       loadSchedules();
+      // notify others about schedule change
+      try {
+        localStorage.setItem('schedulesUpdated', Date.now().toString());
+      } catch (err) {}
+      try { window.dispatchEvent(new Event('schedulesUpdated')); } catch (e) {}
     } catch (error) {
       console.error("Error deleting slot:", error);
       toast.error("Failed to delete slot");
