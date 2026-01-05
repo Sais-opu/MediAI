@@ -223,32 +223,60 @@ const UserSettings = () => {
         }
     }, [role, userId]);
 
-    // Fetch schedules for logged-in doctor
-    useEffect(() => {
-        const fetchSchedules = async () => {
-            if (role !== 'doctor' || !userId) return;
-            setSchedulesLoading(true);
-            try {
-                const token = localStorage.getItem('authToken');
-                const res = await axios.get('/doctor/schedule', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+    // Fetch schedules for logged-in doctor (reusable)
+    const fetchSchedules = async () => {
+        if (role !== 'doctor' || !userId) return;
+        setSchedulesLoading(true);
+        try {
+            const token = localStorage.getItem('authToken');
+            const res = await axios.get('/doctor/schedule', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-                // res.data is expected to be an array of schedule objects { date: 'YYYY-MM-DD', start, end, duration }
-                if (Array.isArray(res.data)) {
-                    setSchedules(res.data);
-                } else {
-                    setSchedules([]);
-                }
-            } catch (err) {
-                console.error('Failed to fetch schedules', err);
+            // res.data is expected to be an array of schedule objects { date: 'YYYY-MM-DD', start, end, duration }
+            if (Array.isArray(res.data)) {
+                setSchedules(res.data);
+            } else {
                 setSchedules([]);
-            } finally {
-                setSchedulesLoading(false);
+            }
+        } catch (err) {
+            console.error('Failed to fetch schedules', err);
+            setSchedules([]);
+        } finally {
+            setSchedulesLoading(false);
+        }
+    };
+
+    // Auto-refresh schedules: initial load, polling, and event listeners
+    useEffect(() => {
+        if (role !== 'doctor' || !userId) return;
+
+        // initial load
+        fetchSchedules();
+
+        // Polling interval (30s)
+        const interval = setInterval(() => {
+            fetchSchedules();
+        }, 30000);
+
+        // storage event (cross-tab) handler
+        const onStorage = (e) => {
+            if (e.key === 'schedulesUpdated') {
+                fetchSchedules();
             }
         };
 
-        fetchSchedules();
+        // same-window event
+        const onSchedulesUpdated = () => fetchSchedules();
+
+        window.addEventListener('storage', onStorage);
+        window.addEventListener('schedulesUpdated', onSchedulesUpdated);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('storage', onStorage);
+            window.removeEventListener('schedulesUpdated', onSchedulesUpdated);
+        };
     }, [role, userId]);
 
     // Check for existing Doctor Request
