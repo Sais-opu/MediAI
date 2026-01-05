@@ -352,7 +352,6 @@ const DoctorEmergencyList = () => {
                                                         <Clock size={10} className="text-rose-500" />
                                                         {formatSlot(e.slotTime)}
                                                     </div>
-                                                    <span className="text-[8px] text-gray-400 ml-3.5">Dur: {e.slotTime?.duration || 0}m</span>
                                                 </div>
                                             </td>
 

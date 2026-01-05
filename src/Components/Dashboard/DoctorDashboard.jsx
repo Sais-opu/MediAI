@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import TodayAppointmentCard from "./DoctorFiles/TodayAppointmentCard";
 import UpcomingAppointmentCard from "./DoctorFiles/UpcomingAppointmentCard";
 import StatCard from "./DoctorFiles/StatCard";
-import ScheduleForm from "./DoctorFiles/ScheduleForm";
 import DoctorConsultation from "../Consultation/DoctorConsultation";
 import ConfirmationModal from "../Shared/ConfirmationModal";
 import AppointmentDetailsModal from "../Shared/AppointmentDetailsModal";
@@ -14,7 +13,6 @@ const DoctorDashboard = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState(null);
-  const [scheduleSlots, setScheduleSlots] = useState([]);
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null);
   const [activeConsultationId, setActiveConsultationId] = useState(null);
@@ -48,7 +46,6 @@ const DoctorDashboard = () => {
         setTodayAppointments(response.data.todayAppointments || []);
         setUpcomingAppointments(response.data.upcomingAppointments || []);
         setWeeklyStats(response.data.weeklyStats || null);
-        setScheduleSlots(response.data.scheduleSlots || []);
         setError(null);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
@@ -63,39 +60,6 @@ const DoctorDashboard = () => {
 
     fetchDashboardData();
   }, [token]);
-
-  const handleAddSlot = async (slot) => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.post("/doctor/schedule", slot, { headers });
-      const scheduleRes = await axios.get("/doctor/schedule", {
-        headers,
-      });
-      setScheduleSlots(scheduleRes.data || []);
-      toast.success("Schedule slot added successfully");
-    } catch (err) {
-      console.error("Error adding schedule:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to add schedule slot"
-      );
-    }
-  };
-
-  const handleDeleteSlot = async (slotId) => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`/doctor/schedule/${slotId}`, {
-        headers,
-      });
-      setScheduleSlots((prev) => prev.filter((s) => s._id !== slotId));
-      toast.success("Schedule slot deleted successfully");
-    } catch (err) {
-      console.error("Error deleting schedule:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to delete schedule slot"
-      );
-    }
-  };
 
   const handlePrescriptionClick = (appointment) => {
     setSelectedAppointment(appointment);
@@ -178,6 +142,33 @@ const DoctorDashboard = () => {
       toast.error(msg);
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleCompleteAppointment = async (appointment) => {
+    if (!window.confirm("Mark this appointment as completed?")) {
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.patch(
+        `/api/complete-appointment/${appointment._id || appointment.id}`,
+        {},
+        { headers }
+      );
+
+      toast.success("Appointment marked as completed");
+      // Refresh dashboard data
+      const response = await axios.get("/doctor/dashboard", { headers });
+      setTodayAppointments(response.data.todayAppointments || []);
+      setUpcomingAppointments(response.data.upcomingAppointments || []);
+      setWeeklyStats(response.data.weeklyStats || null);
+    } catch (error) {
+      console.error("Error completing appointment:", error);
+      const msg = error.response?.data?.message || "Failed to complete appointment";
+      toast.error(msg);
     }
   };
 
@@ -295,6 +286,7 @@ const DoctorDashboard = () => {
                   onViewDetails={() => handleViewDetails(appt)}
                   onPrescriptionClick={handlePrescriptionClick}
                   onCancel={() => initiateCancel(appt)}
+                  onComplete={() => handleCompleteAppointment(appt)}
                 />
               ))
             )}

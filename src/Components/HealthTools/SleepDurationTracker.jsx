@@ -248,7 +248,7 @@ const SleepDurationTracker = () => {
                           </div>
                         </div>
                         <div className="text-right text-sm text-gray-600">
-                          {new Date(record.recordedAt).toLocaleDateString()}
+                          {new Date(record.loggedAt).toLocaleDateString()}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
