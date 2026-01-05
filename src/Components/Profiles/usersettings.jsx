@@ -73,6 +73,10 @@ const UserSettings = () => {
         consultationFee: ""
     });
 
+    // --- Schedules / Availability ---
+    const [schedules, setSchedules] = useState([]);
+    const [schedulesLoading, setSchedulesLoading] = useState(false);
+
     // Get current user ID from token
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -217,6 +221,34 @@ const UserSettings = () => {
         if (role !== 'doctor' && userId) {
             fetchPrescriptions();
         }
+    }, [role, userId]);
+
+    // Fetch schedules for logged-in doctor
+    useEffect(() => {
+        const fetchSchedules = async () => {
+            if (role !== 'doctor' || !userId) return;
+            setSchedulesLoading(true);
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await axios.get('/doctor/schedule', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                // res.data is expected to be an array of schedule objects { date: 'YYYY-MM-DD', start, end, duration }
+                if (Array.isArray(res.data)) {
+                    setSchedules(res.data);
+                } else {
+                    setSchedules([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch schedules', err);
+                setSchedules([]);
+            } finally {
+                setSchedulesLoading(false);
+            }
+        };
+
+        fetchSchedules();
     }, [role, userId]);
 
     // Check for existing Doctor Request
@@ -550,6 +582,22 @@ const UserSettings = () => {
         );
     }
 
+    // Group schedules by weekday name for display
+    const weekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const schedulesByWeekday = {};
+    if (Array.isArray(schedules) && schedules.length > 0) {
+        schedules.forEach((s) => {
+            try {
+                const d = new Date(s.date);
+                const name = weekdays[d.getDay()];
+                if (!schedulesByWeekday[name]) schedulesByWeekday[name] = [];
+                schedulesByWeekday[name].push(s);
+            } catch (err) {
+                // ignore malformed dates
+            }
+        });
+    }
+
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-8 mt-6 md:mt-10 mb-10">
             {/* Two Column Layout */}
@@ -783,17 +831,25 @@ const UserSettings = () => {
                                 Availability
                             </h3>
                             <div className="space-y-3">
-                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                                    <div key={day} className="flex items-center justify-between">
-                                        <span className="font-medium text-gray-700">{day}</span>
-                                        <div className="flex gap-2">
-                                            <span className="badge badge-primary badge-outline">9:00AM-12:00PM</span>
-                                            {['Monday', 'Tuesday', 'Friday'].includes(day) && (
-                                                <span className="badge badge-primary badge-outline">2:00PM-5:00PM</span>
-                                            )}
+                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                                    const slots = schedulesByWeekday[day] || [];
+                                    return (
+                                        <div key={day} className="flex items-center justify-between">
+                                            <span className="font-medium text-gray-700">{day}</span>
+                                            <div className="flex gap-2">
+                                                {schedulesLoading ? (
+                                                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                                                ) : slots.length > 0 ? (
+                                                    slots.slice(0, 3).map((slot) => (
+                                                        <span key={slot._id} className="badge badge-primary badge-outline">{slot.start} - {slot.end}</span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-sm text-gray-400">No availability</span>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
