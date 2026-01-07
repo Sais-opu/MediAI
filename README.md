@@ -75,7 +75,7 @@ Enables real-time and AI-powered doctor discovery.
 
 **4. Emergency & On-Call Appointments**  
 “Emergency Appointment” button bypasses standard scheduling and sends real-time alerts (Socket.io/WebSocket) to on-call doctors and admins.  
-- Doctor accepts → patient assigned slot (visible to admin).  
+- Doctor accepts → patient assigned slot.  
 - Doctor rejects → appointment marked as rejected.
 
 #### Member-2: KHALID ABRAR LABIB
