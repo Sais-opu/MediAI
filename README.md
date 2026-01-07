@@ -18,8 +18,8 @@
 
 
 ### Live Demo / Deployment Link
-**[Live Demo - MediAI](https://mediai-yourproject.vercel.app)**  
-*(Link will be updated once the project is fully deployed on Vercel/Render)*
+**[Live Demo - MediAI](https://medi-ai-beta.vercel.app/?fbclid=IwZXh0bgNhZW0CMTAAYnJpZBExZWxKZ1RmSTZ5NDE2c3lvcnNydGMGYXBwX2lkEDIyMjAzOTE3ODgyMDA4OTIAAR4rUvYtITrUgCzqQgH2KJkL2X2lEpl_5ZwS08i1n1y_hyCx7UiolZDhT8udBw_aem_nXScRX1zypf8gRptFO6Zig)**  
+
 
 
 ### Group Members
