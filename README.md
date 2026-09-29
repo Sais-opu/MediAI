@@ -21,7 +21,8 @@
 **[Live Demo - MediAI](https://medi-ai-beta.vercel.app/?fbclid=IwZXh0bgNhZW0CMTAAYnJpZBExZWxKZ1RmSTZ5NDE2c3lvcnNydGMGYXBwX2lkEDIyMjAzOTE3ODgyMDA4OTIAAR4rUvYtITrUgCzqQgH2KJkL2X2lEpl_5ZwS08i1n1y_hyCx7UiolZDhT8udBw_aem_nXScRX1zypf8gRptFO6Zig)**  
 
 
-
+### Mine part demostrate video
+**[Mine_part_Demo - MediAI](https://github.com/Sais-opu/MediAI/issues/1#issue-5636446229)**  
 ### Group Members
 - MD SAIDUL ISLAM APU
 - KHALID ABRAR LABIB
